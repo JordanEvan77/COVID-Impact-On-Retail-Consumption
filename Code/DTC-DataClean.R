@@ -24,3 +24,5 @@ read_dta()
 
 #This regression seems to want one observation per month, so we’d need to create a year-month variable, use 
 final_df %>% group_by(year, month, yearmo) %>% summarize(RetailEmployment = sum(indname == 'Retail Trade'))
+
+#clean Data:
