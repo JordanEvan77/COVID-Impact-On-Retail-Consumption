@@ -154,6 +154,7 @@ top_earner_data %>%
   geom_line() # a bit messy, but interesting! might be able to clean up by removing bottom values
 
 
+
 #EMPSTAT: This isn't working yet
 top_stats_data <- join_drop %>% filter(EMPSTAT < 25) %>% group_by(EMPSTAT) %>% summarize(n= n(EMPSTAT)) # this isn't working yet
 
@@ -161,6 +162,22 @@ top_stats_data <- join_drop %>% filter(EMPSTAT < 25) %>% group_by(EMPSTAT) %>% s
 top_earner_data %>% 
   ggplot(mapping = aes(x = monthyear, y = n, color = as.factor(EMPSTAT))) + 
   geom_line()
+
+
+#Empstat: Actually works!
+Unemp_data <- join_drop %>% filter(EMPSTAT == 21) %>%  group_by(monthyear, EMPSTAT)  %>% summarize(counted = n())
+
+Unemp_data%>% 
+  ggplot(mapping = aes(x = monthyear, y = counted, color = as.factor(EMPSTAT))) + 
+  geom_line()
+
+#EMPSTAT: Now without a filter:
+Unemp_data2 <- join_drop %>%  group_by(monthyear, EMPSTAT)  %>% summarize(counted = n())
+
+Unemp_data2 %>% 
+  ggplot(mapping = aes(x = monthyear, y = counted, color = as.factor(EMPSTAT))) + 
+  geom_line() # major drop in people at work (10) and slight bump in unemployment (21)
+
 
 
 #numerical:
@@ -194,8 +211,20 @@ corrplot(cor(cor_ind),
 
 
 #BOXPLOTS:
+join_drop%>% 
+  ggplot(aes(x = factor(YEAR), y = FAMINC)) +
+  geom_boxplot() +
+  theme_bw()
 
+join_drop%>% 
+  ggplot(aes(x = factor(YEAR), y = EMPSTAT)) +
+  geom_boxplot() +
+  theme_bw()
 
+join_drop%>% 
+  ggplot(aes(x = factor(YEAR), y = WKSTAT)) +
+  geom_boxplot() +
+  theme_bw()
 #professors step by step guidance: none so far
 
 

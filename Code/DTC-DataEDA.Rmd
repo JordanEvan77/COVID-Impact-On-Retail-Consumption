@@ -25,7 +25,42 @@ library(NHANES)
 
 1 How has COVID affected the health of the retail industry, as measured by employment?
 2 How has retail fared relative to other industries?
-3 Retail needs to worry about who has money to spend - what has changed about who is working and earning money?
+3 Retail needs to worry about who has money to spend - what has changed about who is working and earning money?##
+
+## Key Visuals:
+```{r}
+
+
+
+
+```
+
+## Regression Approach:
+
+### Model 1:
+```{r}
+
+
+
+```
+
+
+### Model 2:
+```{r}
+
+
+
+```
+
+
+### Model 3:
+```{r}
+
+
+
+
+```
+
 
 
 
