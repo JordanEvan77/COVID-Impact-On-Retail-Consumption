@@ -50,13 +50,30 @@ nulls
 
 #So the wors outliers appear to be ASECFLAG, COVIDTELEW, COVIDUNAW, COVIDPAID, COVIDLOOK and INDNAME(where it is 0)
 #----FIRST QUESTION, SHOULD WE DROP MISSING ROWS OF INDNAME, and FULL COLUMNS OF THE REST?
+
+#COVIDUNNAW means unable to work due to covid, this may be our outcome variable that we are looking for !
+#May be valueable to review with covidlook, which means covid kept them from being able to job search. 
   
 join_drop <- join_df2[join_df2$ IND!= 0, ]
 
-join_drop <- join_drop %>% dplyr::select(-c(ASECFLAG, COVIDTELEW, COVIDUNAW, COVIDPAID, COVIDLOOK)) #removes 5 columns
+join_drop <- join_drop %>% dplyr::select(-c(ASECFLAG, COVIDTELEW, COVIDPAID)) #removes 3 cols 
 
 #create dummy variable for monthyear:
-join_drop <- join_drop %>% mutate(monthyear = as.yearmon(paste(join_drop$YEAR, join_drop$MONTH), "%Y %m"))
+join_drop <- join_drop %>% mutate(monthyear = ym(paste(YEAR, MONTH)))
+class(join_drop$monthyear)
+
+# EDUC Conversion factors:
+join_drop <- join_drop %>% mutate(EDUC = sjlabelled::as_label(EDUC))
+
+
+
+#DUMMY VARIABLES:
+join_drop <- join_drop %>% mutate(IncNumber = case_when(FAMINC ==112 ~ 700, FAMINC == 120 ~ 1500, FAMINC == 121 ~ 1250, 
+                                                        FAMINC == 122 ~ 1750, FAMINC == 130 ~ 2500, FAMINC == 131 ~ 2250,
+                                                        
+                                                        FAMINC == 842 ~ 125000))
+      
+
 
 
 #Categorical:
@@ -140,17 +157,17 @@ join_drop %>% ggplot(mapping = aes(WKSTAT)) +
 #FAMINC:
 top_earners <- join_drop %>% 
   group_by(INDNAME) %>% 
-  slice(1) %>% 
-  ungroup() %>% 
-  arrange(desc(FAMINC)) %>% 
+  Summarize(avg_inc = mean(IncNumber)) %>%  
+  arrange(desc(avg_inc)) %>% 
   head(5)
 
 
-top_earner_data <- join_drop %>% filter(INDNAME %in% top_earners$INDNAME)
+top_earner_data <- join_drop %>% group_by(INDNAME, montyear) %>% summarize(avg_inc = mean(IncNumber)) %>% 
+  filter(INDNAME %in% top_earners$INDNAME)
 
 #this will take a long while to actually show up after being visualized
 top_earner_data %>% 
-  ggplot(mapping = aes(x = monthyear, y = FAMINC, color = as.factor(INDNAME))) + 
+  ggplot(mapping = aes(x = monthyear, y = IncNumber, color = as.factor(INDNAME))) + 
   geom_line() # a bit messy, but interesting! might be able to clean up by removing bottom values
 
 
@@ -171,13 +188,20 @@ Unemp_data%>%
   ggplot(mapping = aes(x = monthyear, y = counted, color = as.factor(EMPSTAT))) + 
   geom_line()
 
-#EMPSTAT: Now without a filter:
+#EMPSTAT: Now without a filter: Works!
 Unemp_data2 <- join_drop %>%  group_by(monthyear, EMPSTAT)  %>% summarize(counted = n())
 
 Unemp_data2 %>% 
   ggplot(mapping = aes(x = monthyear, y = counted, color = as.factor(EMPSTAT))) + 
   geom_line() # major drop in people at work (10) and slight bump in unemployment (21)
 
+#Empstat: RETAIL ONLY
+Unemp_data3 <- join_drop %>% filter(EMPSTAT == 21, INDNAME == 'Retail Trade') %>%  group_by(monthyear, EMPSTAT) %>% 
+  summarize(counted = n())
+
+Unemp_data3%>% 
+  ggplot(mapping = aes(x = monthyear, y = counted, color = as.factor(EMPSTAT))) + 
+  geom_line() # no data for 2020 forward?
 
 
 #numerical:
