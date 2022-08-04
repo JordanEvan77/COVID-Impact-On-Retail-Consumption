@@ -103,7 +103,7 @@ join_drop <- join_drop %>% mutate(IncNumber = case_when(FAMINC ==112 ~ 700, FAMI
                                                         FAMINC == 810 ~ 67500, FAMINC == 820 ~ 55000, FAMINC == 830 ~ 67500,
                                                         FAMINC == 840 ~ 87000, FAMINC == 841 ~ 87500, FAMINC == 842 ~ 125000,
                                                         FAMINC == 843 ~ 150000, FAMINC == 995 ~0, FAMINC == 996 ~0, 
-                                                        FAMINC == 997 ~ 0, FAMINC == 999 ~ 0))
+                                                        FAMINC == 997 ~ 0, FAMINC == 999 ~ 0)) #works and runs!
       
 
 
@@ -115,71 +115,71 @@ join_drop %>% ggplot(mapping = aes(FAMINC)) +
 
 #WKSTAT
 join_drop %>% ggplot(mapping = aes(WKSTAT)) + 
-  geom_histogram(bins = 100, fill="blue") # mainly lower values?
+  geom_histogram(stat = 'count', bins = 100, fill="blue") # mainly lower values?
 
 #EDUC:
 join_drop %>% ggplot(mapping = aes(EDUC)) + 
-  geom_histogram(bins = 100, fill="blue") # some spread! worth investigating:)
+  geom_histogram(stat = 'count', bins = 100, fill="blue") # some spread! worth investigating:)
 
 #SCHLCOLL
 join_drop %>% ggplot(mapping = aes(SCHLCOLL)) + 
-  geom_histogram(bins = 100, fill="blue") # mainly 0s and 5s, meaning NIU or doesn't attend any school:)  
+  geom_histogram(stat = 'count', bins = 100, fill="blue") # mainly 0s and 5s, meaning NIU or doesn't attend any school:)  
 
 #CBSASZ
 join_drop %>% ggplot(mapping = aes(CBSASZ)) + 
-  geom_histogram(bins = 100, fill="blue") # reasonably distributed
+  geom_histogram(stat = 'count', bins = 100, fill="blue") # reasonably distributed
 
 #METAREA:
 join_drop %>% ggplot(mapping = aes(METAREA)) + 
-  geom_histogram(bins = 100, fill="blue")  #mostly 9999, does that mean the same as 99, unidentified?
+  geom_histogram(stat = 'count', bins = 100, fill="blue")  #mostly 9999, does that mean the same as 99, unidentified?
 
 #SEX:
 join_drop %>% ggplot(mapping = aes(SEX)) + 
-  geom_histogram(bins = 100, fill="blue")
+  geom_histogram(stat = 'count', bins = 100, fill="blue")
 
 #RACE:
 join_drop %>% ggplot(mapping = aes(RACE)) + 
-  geom_histogram(bins = 100, fill="blue") # a mainly white demographic, which is why the weights are crucial.
+  geom_histogram(stat = 'count', bins = 100, fill="blue") # a mainly white demographic, which is why the weights are crucial.
 
 #MARST
 join_drop %>% ggplot(mapping = aes(MARST)) + 
-  geom_histogram(bins = 100, fill="blue") # mainly married or never married.
+  geom_histogram(stat = 'count', bins = 100, fill="blue") # mainly married or never married.
 
 #NCHILD:
 join_drop %>% ggplot(mapping = aes(NCHILD)) + 
-  geom_histogram(bins = 100, fill="blue") #mainly 0 children in household, which is interesting
+  geom_histogram(stat = 'count', bins = 100, fill="blue") #mainly 0 children in household, which is interesting
 
 #CITIZEN:
 join_drop %>% ggplot(mapping = aes(CITIZEN)) + 
-  geom_histogram(bins = 100, fill="blue") # mainly folsk born in the US
+  geom_histogram(stat = 'count', bins = 100, fill="blue") # mainly folsk born in the US
 
 #NATIVITY: Foreign Birth place:
 join_drop %>% ggplot(mapping = aes(NATIVITY)) + 
-  geom_histogram(bins = 100, fill="blue") # mainly either both parents born in US or individual is born outside US
+  geom_histogram(stat = 'count', fill="blue") # mainly either both parents born in US or individual is born outside US
 
 #HISPAN:
 join_drop %>% ggplot(mapping = aes(HISPAN)) + 
-  geom_histogram(bins = 100, fill="blue") # we only have about 250k Mexican individuals, other latinx is limited
+  geom_histogram(stat = 'count', fill="blue") # we only have about 250k Mexican individuals, other latinx is limited
 
 #EMPSTAT: Crucial:
 join_drop %>% ggplot(mapping = aes(EMPSTAT)) + 
-  geom_histogram(bins = 100, fill="blue") # majority are employed
+  geom_histogram(stat = 'count',  fill="blue") # majority are employed
 
 #IND: Industry type:
 join_drop %>% ggplot(mapping = aes(IND)) + 
-  geom_histogram(bins = 100, fill="blue") # couldn't plot with names, but interesting to see lumps
+  geom_histogram(stat = 'count', fill="blue") # couldn't plot with names, but interesting to see lumps
 
 #CLASS WKR:
 join_drop %>% ggplot(mapping = aes(CLASSWKR)) + 
-  geom_histogram(bins = 100, fill="blue") # mainly private for profit workers
+  geom_histogram(stat = 'count', fill="blue") # mainly private for profit workers
 
 #WHYUNEMP:
 join_drop %>% ggplot(mapping = aes(WHYUNEMP)) + 
-  geom_histogram(bins = 100, fill="blue")  #mainly NIU, which is disapointing, may be useless
+  geom_histogram(stat = 'count', fill="blue")  #mainly NIU, which is disapointing, may be useless
 
 #WKSTAT:
 join_drop %>% ggplot(mapping = aes(WKSTAT)) + 
-  geom_histogram(bins = 100, fill="blue") # mainly full time workers
+  geom_histogram(stat = 'count', fill="blue") # mainly full time workers
 
 
 #----SEcond question, should all of the above be turned into factor() variables?
@@ -233,7 +233,7 @@ Unemp_data3 <- join_drop %>% filter(EMPSTAT == 21, INDNAME == 'Retail Trade') %>
 
 Unemp_data3%>% 
   ggplot(mapping = aes(x = monthyear, y = counted, color = as.factor(EMPSTAT))) + 
-  geom_line() # no data for 2020 forward?
+  geom_line() #
 
 
 #numerical:
