@@ -8,9 +8,7 @@ library(multcomp)
 library(NHANES)
 library(purrr)
 library(lubridate)
-library(correlationfunnel)
 library(corrplot)
-library(inspectdf) 
 library(dplyr)
 library(haven)
 library(ipumsr)
@@ -64,14 +62,48 @@ class(join_drop$monthyear)
 
 # EDUC Conversion factors:
 join_drop <- join_drop %>% mutate(EDUC = sjlabelled::as_label(EDUC))
+join_drop <- join_drop %>% mutate(STATEFIP = sjlabelled::as_label(STATEFIP))
+join_drop <- join_drop %>% mutate(REGION = sjlabelled::as_label(REGION))
+join_drop <- join_drop %>% mutate(METAREA = sjlabelled::as_label(METAREA))
+join_drop <- join_drop %>% mutate(CBSASZ = sjlabelled::as_label(CBSASZ))
+join_drop <- join_drop %>% mutate(SEX = sjlabelled::as_label(SEX))
+join_drop <- join_drop %>% mutate(RACE = sjlabelled::as_label(RACE))
+join_drop <- join_drop %>% mutate(MARST = sjlabelled::as_label(MARST))
+join_drop <- join_drop %>% mutate(CITIZEN = sjlabelled::as_label(CITIZEN))
+join_drop <- join_drop %>% mutate(NATIVITY = sjlabelled::as_label(NATIVITY))
+join_drop <- join_drop %>% mutate(HISPAN = sjlabelled::as_label(HISPAN))
+join_drop <- join_drop %>% mutate(CLASSWKR = sjlabelled::as_label(CLASSWKR))
+join_drop <- join_drop %>% mutate(WHYUNEMP = sjlabelled::as_label(WHYUNEMP))
+join_drop <- join_drop %>% mutate(SCHLCOLL = sjlabelled::as_label(SCHLCOLL))
+join_drop <- join_drop %>% mutate(DIFFANY = sjlabelled::as_label(DIFFANY))
+join_drop <- join_drop %>% mutate(COVIDUNAW = sjlabelled::as_label(COVIDUNAW))
+join_drop <- join_drop %>% mutate(COVIDLOOK = sjlabelled::as_label(COVIDLOOK))
+
+join_drop <- join_drop %>% mutate(WKSTAT = sjlabelled::as_label(WKSTAT))
 
 
 
 #DUMMY VARIABLES:
 join_drop <- join_drop %>% mutate(IncNumber = case_when(FAMINC ==112 ~ 700, FAMINC == 120 ~ 1500, FAMINC == 121 ~ 1250, 
                                                         FAMINC == 122 ~ 1750, FAMINC == 130 ~ 2500, FAMINC == 131 ~ 2250,
-                                                        
-                                                        FAMINC == 842 ~ 125000))
+                                                        FAMINC == 132 ~ 2750, FAMINC ==140 ~ 3500, FAMINC ==141 ~ 3250, 
+                                                        FAMINC == 150 ~ 4500, FAMINC == 200 ~ 6000, FAMINC == 210 ~ 6500,
+                                                        FAMINC == 220 ~ 5500, FAMINC == 230 ~ 7000, FAMINC == 231 ~ 6750,
+                                                        FAMINC == 232 ~ 6500, FAMINC == 233 ~ 7250, FAMINC == 234 ~ 7500,
+                                                        FAMINC == 300 ~ 8500, FAMINC == 310 ~ 7750, FAMINC == 320 ~ 8250,
+                                                        FAMINC == 330 ~ 8750, FAMINC == 340 ~ 8500, FAMINC == 350 ~ 9500,
+                                                        FAMINC == 400 ~ 12500, FAMINC == 410 ~ 10500, FAMINC ==420 ~ 11500,
+                                                        FAMINC == 430 ~ 11500, FAMINC == 440 ~ 11000, FAMINC == 450 ~ 12500,
+                                                        FAMINC == 460 ~ 13500, FAMINC == 470 ~ 13750, FAMINC == 480 ~ 13500,
+                                                        FAMINC == 490 ~ 14500, FAMINC == 500 ~ 17500, FAMINC == 510 ~ 15500,
+                                                        FAMINC == 520 ~ 16500, FAMINC == 530 ~ 17500, FAMINC == 540 ~ 16750,
+                                                        FAMINC == 550 ~ 18750, FAMINC == 560 ~ 19000, FAMINC == 600 ~ 22500,
+                                                        FAMINC == 700 ~ 37500, FAMINC == 710 ~ 27500, FAMINC == 720 ~ 32500,
+                                                        FAMINC == 730 ~ 37500, FAMINC == 740 ~ 45000, FAMINC == 800 ~ 65000,
+                                                        FAMINC == 810 ~ 67500, FAMINC == 820 ~ 55000, FAMINC == 830 ~ 67500,
+                                                        FAMINC == 840 ~ 87000, FAMINC == 841 ~ 87500, FAMINC == 842 ~ 125000,
+                                                        FAMINC == 843 ~ 150000, FAMINC == 995 ~0, FAMINC == 996 ~0, 
+                                                        FAMINC == 997 ~ 0, FAMINC == 999 ~ 0))
       
 
 
