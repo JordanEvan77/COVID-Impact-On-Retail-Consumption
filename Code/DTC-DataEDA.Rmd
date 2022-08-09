@@ -41,7 +41,7 @@ Sean:
 colnames(first_data)
 
 sean_data <- first_data %>% 
-  select(REGION, WTFINL, NCHILD, CLASSWKR, COVIDUNAW, FAMINC, IncNumber, DIFFANY, YEAR, SERIAL, MONTH, HWTFINL, CPSID)
+  dplyr::select(REGION, WTFINL, NCHILD, CLASSWKR, COVIDUNAW, FAMINC, IncNumber, DIFFANY, YEAR, SERIAL, MONTH, HWTFINL, CPSID)
 
 ```
 
@@ -96,7 +96,7 @@ Andrew:
 ```{r}
 
 
-"STATEFIP" "CPSIDP" "CITIZEN" "WHYUNEMP" "COVIDLOOK" "RACE"  "PERNUM"
+#"STATEFIP" "CPSIDP" "CITIZEN" "WHYUNEMP" "COVIDLOOK" "RACE"  "PERNUM"
 
 ```
 
@@ -173,7 +173,7 @@ Andrew:
 Brooke:
 ```{r}
 
-"METAREA" "AGE" "NATIVITY" "WKSTAT" "INDNAME" "EMPSTAT" "MARST"
+#"METAREA" "AGE" "NATIVITY" "WKSTAT" "INDNAME" "EMPSTAT" "MARST"
 
 ```
 
@@ -252,10 +252,32 @@ Jordan:
 
 
 jordan_data <- first_data %>% 
-  dplyr:: select(CBSASZ, SEX, HISPAN, EDUC, monthyear, SCHLCOLL, IND)
+  dplyr:: select(CBSASZ, SEX, HISPAN, EDUC, monthyear, SCHLCOLL, IND, IncNumber, INDNAME)
 
 jordan_data %>% ggplot(mapping = aes(CBSASZ)) + 
   geom_histogram(stat = 'count',  fill="blue")
+
+
+
+#PLOT OVER TIME: EMPSTAT AND FAMINC by IND:
+#FAMINC:
+top_earners <- jordan_data %>% 
+  group_by(INDNAME) %>% 
+  summarise(avg_inc = mean(IncNumber, na.rm=TRUE)) %>%  
+  arrange(desc(avg_inc)) %>% 
+  head(5)
+
+
+top_earner_data <- jordan_data %>% group_by(INDNAME, monthyear) %>% summarize(avg_inc = mean(IncNumber, na.rm=TRUE)) %>% 
+  filter(INDNAME %in% top_earners$INDNAME)
+
+#this will take a long while to actually show up after being visualized
+top_earner_data %>% 
+  ggplot(mapping = aes(x = monthyear, y = avg_inc, color = as.factor(INDNAME))) + 
+  geom_line() + theme(legend.position = "bottom")
+
+
+
 ```
 
 
