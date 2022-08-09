@@ -279,64 +279,52 @@ top_earner_data %>%
 
 
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## Regression Approach:
-
-### Model 1:
 ```{r}
 
+#CBSASZ, SEX, HISPAN, EDUC, monthyear, SCHLCOLL, IND, IncNumber, INDNAME
+jordan_data %>% ggplot(mapping = aes(SEX)) + 
+  geom_histogram(stat = 'count',  fill="blue")
+
+jordan_data %>% ggplot(mapping = aes(HISPAN)) + 
+  geom_histogram(stat = 'count',  fill="blue")
+
+jordan_data %>% ggplot(mapping = aes(EDUC)) + 
+  geom_histogram(stat = 'count',  fill="blue")
+
+jordan_data %>% ggplot(mapping = aes(monthyear)) + 
+  geom_histogram(stat = 'count',  fill="blue")
+
+jordan_data %>% ggplot(mapping = aes(SCHLCOLL)) + 
+  geom_histogram(stat = 'count',  fill="blue")
+
+jordan_data %>% ggplot(mapping = aes(IND)) + 
+  geom_histogram(stat = 'count',  fill="blue")
+
+jordan_data %>% ggplot(mapping = aes(IncNumber)) + 
+  geom_histogram(stat = 'count',  fill="blue")
+
+jordan_data %>% ggplot(mapping = aes(INDNAME)) + 
+  geom_histogram(stat = 'count',  fill="blue")
 
 
 ```
-
-
-### Model 2:
-```{r}
-
-
-
-```
-
-
-### Model 3:
-```{r}
+The above all look useful, but I am in favor of dropping IND in favor of just IndName.
 
 
 
 
-```
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
