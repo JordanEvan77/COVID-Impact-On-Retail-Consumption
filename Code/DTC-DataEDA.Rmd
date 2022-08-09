@@ -21,6 +21,12 @@ library(ggstance)
 library(multcomp)
 library(NHANES)
 ```
+
+
+```{r}
+
+first_data <- read_csv('../RawData/firstdata.csv')
+```
 ## The Questions:
 
 1 How has COVID affected the health of the retail industry, as measured by employment?
@@ -28,12 +34,86 @@ library(NHANES)
 3 Retail needs to worry about who has money to spend - what has changed about who is working and earning money?##
 
 ## Key Visuals:
+
+Sean:
 ```{r}
 
 
 
 
 ```
+
+
+
+
+
+
+
+
+
+
+Andrew:
+```{r}
+
+
+
+
+```
+
+
+
+
+
+
+Brooke:
+```{r}
+
+
+
+```
+
+
+
+
+
+
+Jordan:
+```{r}
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## Regression Approach:
 
