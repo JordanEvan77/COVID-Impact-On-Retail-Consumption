@@ -108,7 +108,14 @@ join_drop <- join_drop %>% mutate(IncNumber = case_when(FAMINC ==112 ~ 700, FAMI
  #write.csv(join_drop, 'Rawdata/firstdata.csv')
 
 
-
+#change floor base, at industry level: 
+#This regression seems to want one observation per month, so we’d need to create a year-month variable, use 
+join_drop %>% group_by(YEAR, MONTH, monthyear) %>% summarize(RetailEmployment = sum(INDNAME == 'Retail Trade'))
+# the above is just a starting point for how we could do this. 
+#His notes say this from the spec:
+"If you want an analysis to be at the industry-month level, you should make your data be at that level too! 
+Use mutate(yearmo = year*100 + month) to create a year-month variable, and then use group_by(yearmo, indname) %>% summarize() 
+to collapse data to the yearmo/indname level"
 
 #Categorical:
 #FAMINC: HIstogram:
@@ -289,14 +296,7 @@ join_drop%>%
 
 
 
-#change floor base, at industry level: 
-#This regression seems to want one observation per month, so we’d need to create a year-month variable, use 
-join_drop %>% group_by(YEAR, MONTH, monthyear) %>% summarize(RetailEmployment = sum(INDNAME == 'Retail Trade'))
-# the above is just a starting point for how we could do this. 
-#His notes say this from the spec:
-"If you want an analysis to be at the industry-month level, you should make your data be at that level too! 
-Use mutate(yearmo = year*100 + month) to create a year-month variable, and then use group_by(yearmo, indname) %>% summarize() 
-to collapse data to the yearmo/indname level"
+
 
 
 

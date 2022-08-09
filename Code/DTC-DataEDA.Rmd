@@ -20,6 +20,7 @@ library(Ecdat)
 library(ggstance)
 library(multcomp)
 library(NHANES)
+library(corrplot)
 ```
 
 
@@ -310,6 +311,10 @@ jordan_data %>% ggplot(mapping = aes(INDNAME)) +
 ```
 The above all look useful, but I am in favor of dropping IND in favor of just IndName.
 
+
+```{r}
+
+```
 
 
 
