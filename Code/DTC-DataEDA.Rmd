@@ -280,6 +280,33 @@ top_earner_data %>%
 
 
 ```
+
+```{r}
+#PLOT OVER TIME: EMPSTAT AND FAMINC by IND:
+#FAMINC:
+bot_earners <- jordan_data %>% 
+  group_by(INDNAME) %>% 
+  summarise(avg_inc = mean(IncNumber, na.rm=TRUE)) %>%  
+  arrange(avg_inc) %>% 
+  head(5)
+
+
+bot_earner_data <- jordan_data %>% group_by(INDNAME, monthyear) %>% summarize(avg_inc = mean(IncNumber, na.rm=TRUE)) %>% 
+  filter(INDNAME %in% bot_earners$INDNAME)
+
+#this will take a long while to actually show up after being visualized
+bot_earner_data %>% 
+  ggplot(mapping = aes(x = monthyear, y = avg_inc, color = as.factor(INDNAME))) + 
+  geom_line() + theme(legend.position = "bottom")
+
+
+
+```
+THis above plot is very interesting, seems like the most struggling industries!
+
+
+
+
 ```{r}
 
 #CBSASZ, SEX, HISPAN, EDUC, monthyear, SCHLCOLL, IND, IncNumber, INDNAME
@@ -313,12 +340,57 @@ The above all look useful, but I am in favor of dropping IND in favor of just In
 
 
 ```{r}
+top_earner_data %>% 
+  ggplot(aes(x = factor(monthyear), y = avg_inc)) +
+  geom_boxplot() +
+  theme_bw()
+
+
+```
+
+The variation between these two plots is fascinating, it seems that the lowest earning industries perhaps felt less of an impact on the average income!
+
+```{r}
+bot_earner_data %>% 
+  ggplot(aes(x = factor(monthyear), y = avg_inc)) +
+  geom_boxplot() +
+  theme_bw()
+
+```
+
+Change of HISPAN, EDUC, SCHLCOLL and CBSASZ over time:
+```{r}
+hisp_time <- jordan_data %>% group_by(HISPAN) %>% summarise(n1= n(HISPAN))
+
+
+hisp_time %>% 
+  ggplot(mapping = aes(x = monthyear, y = n1, color = as.factor(HISPAN))) + 
+  geom_line()
+
+#-----------EDUC:
+
+educ_time <- jordan_data %>% group_by(EDUC) %>% summarise(n2= n(EDUC))
+
+
+educ_time %>% 
+  ggplot(mapping = aes(x = monthyear, y = n2, color = as.factor(EDUC))) + 
+  geom_line()
+
+#----------SCHCOLL
+
+sch_time <- jordan_data %>% group_by(SCHLCOLL) %>% summarise(n3= n(SCHLCOLL))
+
+
+sch_time %>% 
+  ggplot(mapping = aes(x = monthyear, y = n3, color = as.factor(SCHLCOLL))) + 
+  geom_line()
 
 ```
 
 
 
-
+Jordan's Thoughts: CBSASZ, SEX, HISPAN, EDUC, monthyear, SCHLCOLL, IncNumber, INDNAME are all very useful for controls and analysis.
+IND should probably just be dropped.
 
 
 
