@@ -105,7 +105,7 @@ join_drop <- join_drop %>% mutate(IncNumber = case_when(FAMINC ==112 ~ 700, FAMI
                                                         FAMINC == 843 ~ 150000, FAMINC == 995 ~0, FAMINC == 996 ~0, 
                                                         FAMINC == 997 ~ 0, FAMINC == 999 ~ 0)) #works and runs!
 
-#write.csv(join_drop, 'Rawdata/firstdata.csv')      
+# write.csv(join_drop, 'Rawdata/firstdata.csv')
 
 
 

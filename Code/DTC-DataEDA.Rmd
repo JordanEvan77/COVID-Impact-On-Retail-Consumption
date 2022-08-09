@@ -38,10 +38,50 @@ first_data <- read_csv('../RawData/firstdata.csv')
 Sean:
 ```{r}
 
+colnames(first_data)
 
-
+sean_data <- first_data %>% 
+  select(REGION, WTFINL, NCHILD, CLASSWKR, COVIDUNAW, FAMINC, IncNumber, DIFFANY, YEAR, SERIAL, MONTH, HWTFINL, CPSID)
 
 ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -56,9 +96,74 @@ Andrew:
 ```{r}
 
 
-
+"STATEFIP" "CPSIDP" "CITIZEN" "WHYUNEMP" "COVIDLOOK" "RACE"  "PERNUM"
 
 ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -68,7 +173,7 @@ Andrew:
 Brooke:
 ```{r}
 
-
+"METAREA" "AGE" "NATIVITY" "WKSTAT" "INDNAME" "EMPSTAT" "MARST"
 
 ```
 
@@ -77,9 +182,73 @@ Brooke:
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 Jordan:
 ```{r}
-
+"CBSASZ" "SEX" "HISPAN" "EDUC" "monthyear" "SCHLCOLL" "IND"
 
 ```
 
