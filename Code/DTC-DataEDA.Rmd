@@ -93,13 +93,234 @@ sean_data <- first_data %>%
 
 
 
-Andrew:
+Andy:
 ```{r}
-
-
 #"STATEFIP" "CPSIDP" "CITIZEN" "WHYUNEMP" "COVIDLOOK" "RACE"  "PERNUM"
+andy_data <- first_data %>% 
+  dplyr:: select(STATEFIP, CPSIDP, CITIZEN, WHYUNEMP, COVIDLOOK, RACE, PERNUM, YEAR, MONTH, monthyear)
 
+andy_data <- andy_data %>%
+  mutate(Count = 1)
+
+summary(andy_data)
 ```
+
+STATEFIP -------------------------------------------------------------------------------
+Class: Character -->
+Description: State FIPS Code (starts at 01 and goes through 99) - gives literal state name
+Identifies household's state of residence
+Includes DC, and several groups of states beginning at 61.
+
+Discussion points: -->
+Remove data that isn't a literal state?
+Group by state when doing analysis?
+Better variable would be state population?
+
+```{r}
+#------------------
+# Histogram for STATEFIP
+andy_data %>% ggplot(mapping = aes(STATEFIP)) + 
+  geom_histogram(stat = 'count',  fill="cadetblue") +
+  labs(x = 'STATEFIP',
+       y = 'Count of Individuals',
+       title = 'Respondent Count by STATEFIP') +
+  theme(axis.text.x = element_text(angle = -45),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(color = ))
+  
+```
+
+
+
+
+CPSIDP ---------------------------------------------------------------------------------
+Class: numeric (14 digit numeric value)
+Description: unique individual identifier (primary key for person)
+Allows linking to households (primary and foreign key)
+Important to verify CPSIDP with AGE, SEX, and RACE due to inconsistent responses
+
+
+Discussion points:
+DEFINITELY INCLUDE CPSIDP, need for linking/joins
+Not sure what to plot this one against, mostly used for joining.
+
+
+
+
+
+CITIZEN --------------------------------------------------------------------------------
+Class: numeric (1, 2, 3, 4, 5, or 9)
+Description: citizenship status
+1: Born in US
+2: Born in US Outlying
+3: Born abroad of American parents
+4: Naturalized citizen
+5: Not a citizen
+9: NIU
+
+Discussion points:
+Might be worth including as a group by?
+Not critical or need to control for unless we anticipate disproportionate amount of 
+individuals in retail are not citizens?
+
+```{r}
+andy_data %>% ggplot(mapping = aes(CITIZEN)) + 
+  geom_histogram(stat = 'count',  fill="cadetblue") +
+  labs(x = 'Citizen',
+       y = 'Count',
+       title = 'Citizenship Type Counts') +
+  theme(axis.text.x = element_text(angle = -45),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(color = ))
+```
+
+
+# WHYUNEMP -------------------------------------------------------------------------------
+# Class: numeric (0 thru 6)
+# Description: reason for unemployment ranging from 0 (NIU) to Job loser 
+#              to Job Leaver to New Entrant, etc.
+
+# Discussion Points:
+# only useful for those who are actually unemployed
+# Use for comparing groups
+# Findings: Job loser - on layoff is biggest change, massive spike in 2020
+
+
+Histogram:
+```{r}
+andy_data %>% ggplot(mapping = aes(WHYUNEMP)) + 
+  geom_histogram(stat = 'count',  fill="cadetblue") +
+  labs(x = 'WHYUNEMP',
+       y = 'Count',
+       title = 'Why Unemployed Counts') +
+  theme(axis.text.x = element_text(angle = -45),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(color = ))
+```
+
+Changes over time:
+```{r}
+whyunemp_filtered <- andy_data %>%
+  group_by(WHYUNEMP, monthyear) %>%
+  summarize(Count = sum(Count)) %>%
+  filter(WHYUNEMP != 'NIU')
+
+whyunemp_chart <- whyunemp_filtered %>%
+  ggplot(mapping = aes(x = monthyear, y = Count, color = as.factor(WHYUNEMP))) +
+  geom_line() +
+  labs(x = 'Reason Why Unemployed',
+       y = 'Aggregated Count',
+       title = 'Unemployment Reason Changes Over Time',
+       subtitle = 'Excludes NIU (no response)') +
+  theme(legend.position = 'bottom',
+        axis.text.x = element_text(angle = -45),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(color = ))
+
+whyunemp_chart # view plot
+```
+
+
+COVIDLOOK ------------------------------------------------------------------------------
+Class: numeric (binary)
+Description: asks if respondents were prevented from looking for work due to covid
+01 = No = not prevented from looking for work due to covid
+02 = Yes = prevented from looking for work due to covid
+
+
+Discussion Points:
+DEFINITELY Include. Could be good for interaction terms or comparing groups.
+
+Histogram:
+```{r}
+covidlook_hist <- andy_data %>% 
+  filter(COVIDLOOK != 'NIU', COVIDLOOK != 'NA') %>%
+  ggplot(mapping = aes(COVIDLOOK)) + 
+  geom_histogram(stat = 'count',  fill="cadetblue") +
+  labs(x = 'COVIDLOOK',
+       y = 'Count',
+       title = 'COVIDLOOK Counts',
+       subtitle = 'Prevented from looking for work due to covid? Excludes NIU and NA') +
+  theme(axis.text.x = element_text(angle = -45),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(color = ))
+
+covidlook_hist
+```
+Changes over time:
+```{r}
+covidlook_line <- andy_data %>%
+  group_by(COVIDLOOK, monthyear) %>%
+  summarize(Count = sum(Count)) %>%
+  filter(COVIDLOOK != 'NIU', COVIDLOOK != 'NA') %>%
+  ggplot(mapping = aes(x = monthyear, y = Count, color = as.factor(COVIDLOOK))) +
+  geom_line() +
+  labs(x = 'Prevented from Looking for Work Due to COVID',
+       y = 'Count',
+       title = 'COVIDLOOK Over Time',
+       subtitle = 'Excludes NIU (no response) and NA') +
+  theme(legend.position = 'bottom',
+        axis.text.x = element_text(angle = -45),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(color = ))
+
+covidlook_line # view plot
+```
+
+
+
+RACE -----------------------------------------------------------------------------------
+Class: numeric (3 digits)
+Description: respondents race (and combos)
+26 possible codes
+
+
+Discussion Points:
+Possibly include as a control? 
+Do we anticipate certain groups to be more proportionally represented in retail industry?
+Histogram:
+```{r}
+race_hist <- andy_data %>% 
+  filter(RACE != 'NIU') %>%
+  ggplot(mapping = aes(RACE)) + 
+  geom_histogram(stat = 'count',  fill="cadetblue") +
+  labs(x = 'Race',
+       y = 'Count',
+       title = 'Race Histogram',
+       subtitle = 'Count of Individuals by Race') +
+  theme(axis.text.x = element_text(angle = -45),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(color = ))
+
+race_hist
+```
+
+
+# PERNUM ---------------------------------------------------------------------------------
+# Class: numeric (2 digit)
+# Description: all persons listed within each household consecutively (starting w/ 1)
+# Combine with YEAR, MONTH, and SERIAL uniquely identifies each person within sample
+# Combining as such does not uniquely identify across samples.
+
+
+# Discussion points
+# DEFINITELY NEED in data frames/joins
+# DON'T NEED to control for in regression.
+
 
 
 
