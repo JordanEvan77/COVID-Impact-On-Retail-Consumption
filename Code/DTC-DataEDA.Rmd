@@ -21,7 +21,7 @@ library(ggstance)
 library(multcomp)
 library(NHANES)
 library(corrplot)
-library(plotly)
+
 ```
 
 
@@ -43,31 +43,133 @@ Sean:
 colnames(first_data)
 
 sean_data <- first_data %>% 
-  dplyr::select(REGION, WTFINL, NCHILD, CLASSWKR, COVIDUNAW, FAMINC, IncNumber, DIFFANY, YEAR, SERIAL, MONTH, HWTFINL, CPSID, YEAR, SERIAL, MONTH, HWTFINL, INDNAME)
+  dplyr::select(REGION, WTFINL, NCHILD, CLASSWKR, COVIDUNAW, FAMINC, IncNumber, DIFFANY, YEAR, SERIAL, MONTH, HWTFINL, CPSID, YEAR, SERIAL, MONTH, HWTFINL)
 
 
 ```
+Sean:
 
 ```{r}
 
+sean_data %>% count(REGION)
+sean_data %>% count(CLASSWKR)
+sean_data %>% count(NCHILD)
+sean_data %>% count(IncNumber)
+sean_data %>% count(DIFFANY)
+sean_data %>% count(YEAR)
+sean_data %>% count(COVIDUNAW)
 
-ggplot(sean_data, aes(x = IncNumber)) +
-  geom_histogram()
-
-#way more high income than lower income included in the data
 ```
-
 ```{r}
 
-ggplot(sean_data %>% count(CLASSWKR), aes(x = CLASSWKR, y = n)) +
+region_class <- sean_data %>% count(REGION,CLASSWKR)
+region_class
+
+ggplot(region_class, aes(x = REGION, y = n, color = CLASSWKR)) +
   geom_col()
 
-sean_data %>% count(CLASSWKR)
-
 ```
 
 
 
+```{r}
+
+Inc_Chld <- sean_data %>% count(IncNumber, NCHILD)
+Inc_Chld
+Inc_Chld$NCHILD <- as.factor(Inc_Chld$NCHILD)
+
+ggplot(Inc_Chld, aes(x = IncNumber, y = n, color = NCHILD)) +
+  geom_col()
+
+
+```
+
+```{r}
+
+reg_Chld <- sean_data %>% count(REGION, NCHILD)
+reg_Chld
+
+sort(sean_data$REGION) %>% unique()
+
+reg_Chld$NCHILD <- as.factor(reg_Chld$NCHILD)
+
+ggplot(reg_Chld, aes(x = REGION, y = n, color = NCHILD)) +
+  geom_col()
+
+
+```
+
+```{r}
+
+diff_inc <- sean_data %>% count(DIFFANY, IncNumber)
+diff_inc$IncNumber <- as.factor(diff_inc$IncNumber)
+diff_inc
+
+ggplot(diff_inc %>% filter(DIFFANY == 'Has difficulty'), aes(x = IncNumber, y = n)) +
+  geom_col()
+
+ggplot(diff_inc %>% filter(DIFFANY == 'No difficulty'), aes(x = IncNumber, y = n)) +
+  geom_col()
+
+```
+
+
+```{r}
+
+diff_class <- sean_data %>% count(DIFFANY, CLASSWKR)
+diff_class
+
+ggplot(diff_class %>% filter(DIFFANY == 'Has difficulty'), aes(x = CLASSWKR, y = n)) +
+  geom_col()
+
+ggplot(diff_class %>% filter(DIFFANY == 'No difficulty'), aes(x = CLASSWKR, y = n)) +
+  geom_col()
+
+```
+
+```{r}
+
+covun_class <- sean_data %>% count(COVIDUNAW, CLASSWKR)
+covun_class
+
+covun_class <- covun_class %>% 
+  mutate(total = case_when(COVIDUNAW == 'No' ~ 1222494,
+                           COVIDUNAW == 'Yes' ~ 75946,
+                           TRUE ~ 1624904)) %>% 
+  mutate(proportion = n/total)
+
+covun_class
+
+
+ggplot(covun_class %>% filter(COVIDUNAW == 'No'), aes(x = CLASSWKR, y = proportion)) +
+  geom_col()
+
+ggplot(covun_class %>% filter(COVIDUNAW == 'Yes'), aes(x = CLASSWKR, y = proportion)) +
+  geom_col()
+
+```
+
+```{r}
+
+covun_inc <- sean_data %>% count(COVIDUNAW, IncNumber)
+covun_inc$IncNumber <- as.factor(covun_inc$IncNumber)
+
+covun_inc <- covun_inc %>% 
+  mutate(total = case_when(COVIDUNAW == 'No' ~ 1222494,
+                           COVIDUNAW == 'Yes' ~ 75946,
+                           TRUE ~ 1624904)) %>% 
+  mutate(proportion = n/total)
+
+covun_inc
+
+
+ggplot(covun_inc %>% filter(COVIDUNAW == 'No'), aes(x = IncNumber, y = proportion)) +
+  geom_col()
+
+ggplot(covun_inc %>% filter(COVIDUNAW == 'Yes'), aes(x = IncNumber, y = proportion)) +
+  geom_col()
+
+```
 
 
 
