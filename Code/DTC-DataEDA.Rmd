@@ -21,6 +21,7 @@ library(ggstance)
 library(multcomp)
 library(NHANES)
 library(corrplot)
+library(plotly)
 ```
 
 
@@ -42,7 +43,26 @@ Sean:
 colnames(first_data)
 
 sean_data <- first_data %>% 
-  dplyr::select(REGION, WTFINL, NCHILD, CLASSWKR, COVIDUNAW, FAMINC, IncNumber, DIFFANY, YEAR, SERIAL, MONTH, HWTFINL, CPSID)
+  dplyr::select(REGION, WTFINL, NCHILD, CLASSWKR, COVIDUNAW, FAMINC, IncNumber, DIFFANY, YEAR, SERIAL, MONTH, HWTFINL, CPSID, YEAR, SERIAL, MONTH, HWTFINL, INDNAME)
+
+
+```
+
+```{r}
+
+
+ggplot(sean_data, aes(x = IncNumber)) +
+  geom_histogram()
+
+#way more high income than lower income included in the data
+```
+
+```{r}
+
+ggplot(sean_data %>% count(CLASSWKR), aes(x = CLASSWKR, y = n)) +
+  geom_col()
+
+sean_data %>% count(CLASSWKR)
 
 ```
 
