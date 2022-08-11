@@ -179,15 +179,14 @@ andy_data %>% ggplot(mapping = aes(CITIZEN)) +
 ```
 
 
-# WHYUNEMP -------------------------------------------------------------------------------
-# Class: numeric (0 thru 6)
-# Description: reason for unemployment ranging from 0 (NIU) to Job loser 
-#              to Job Leaver to New Entrant, etc.
+WHYUNEMP -------------------------------------------------------------------------------
+Class: numeric (0 thru 6)
+Description: reason for unemployment ranging from 0 (NIU) to Job loser to Job Leaver to New Entrant, etc.
 
-# Discussion Points:
-# only useful for those who are actually unemployed
-# Use for comparing groups
-# Findings: Job loser - on layoff is biggest change, massive spike in 2020
+Discussion Points:
+only useful for those who are actually unemployed
+Use for comparing groups
+Findings: Job loser - on layoff is biggest change, massive spike in 2020
 
 
 Histogram:
@@ -310,16 +309,16 @@ race_hist
 ```
 
 
-# PERNUM ---------------------------------------------------------------------------------
-# Class: numeric (2 digit)
-# Description: all persons listed within each household consecutively (starting w/ 1)
-# Combine with YEAR, MONTH, and SERIAL uniquely identifies each person within sample
-# Combining as such does not uniquely identify across samples.
+PERNUM ---------------------------------------------------------------------------------
+Class: numeric (2 digit)
+Description: all persons listed within each household consecutively (starting w/ 1)
+Combine with YEAR, MONTH, and SERIAL uniquely identifies each person within sample
+Combining as such does not uniquely identify across samples.
 
 
-# Discussion points
-# DEFINITELY NEED in data frames/joins
-# DON'T NEED to control for in regression.
+Discussion points
+DEFINITELY NEED in data frames/joins
+DON'T NEED to control for in regression.
 
 
 
