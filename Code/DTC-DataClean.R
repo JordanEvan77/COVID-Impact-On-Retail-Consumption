@@ -123,17 +123,27 @@ final_df <- join_drop %>% dplyr::select(-c(CBSASZ, HISPAN, STATEFIP, COVIDLOOK, 
 
 #DUMMY:
 #Covid Time Period:
-final_df %>% mutate()
+
+final_df$covid1_dummy <- ifelse(final_df$monthyear == '2020-03-01' | final_df$monthyear == '2020-04-01' , 1, 0)
+
+final_df$covid2_dummy <- ifelse(final_df$monthyear == '2020-05-01' | final_df$monthyear == '2020-06-01' |
+                                  final_df$monthyear == '2020-07-01' | final_df$monthyear == '2020-08-01' |
+                                  final_df$monthyear == '2020-09-01' | final_df$monthyear == '2020-10-01', 1, 0)
+
+final_df$covid3_dummy <- ifelse(final_df$monthyear == '2020-11-01' | final_df$monthyear == '2020-12-01' |
+                                  final_df$monthyear == '2021-01-01' | final_df$monthyear == '2021-02-01' |
+                                  final_df$monthyear == '2021-03-01' | final_df$monthyear == '2021-04-01' |
+                                  final_df$monthyear == '2021-05-01' | final_df$monthyear == '2021-06-01' |
+                                  final_df$monthyear == '2021-07-01', 1, 0)
+
 
 #Race:
-final_df %>% mutate()
+
+final_df$race_dummy <- ifelse(final_df$RACE =='White', 1, 0)
 
 #SCHLOL:
-final_df %>% mutate()
-
-
-
-
+final_df$student_dummy <- ifelse(final_df$SCHLCOLL =='Does not attend school, college or university' | 
+                                   final_df$SCHLCOLL == 'NIU', 0, 1)
 
 
 
