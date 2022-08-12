@@ -21,6 +21,7 @@ library(ggstance)
 library(multcomp)
 library(NHANES)
 library(corrplot)
+library(patchwork)
 
 ```
 
@@ -518,16 +519,54 @@ Brooke:
 
 #"METAREA" "AGE" "NATIVITY" "WKSTAT" "INDNAME" "EMPSTAT" "MARST"
 
+brooke_data <- first_data %>% 
+  dplyr::select(METAREA, AGE, NATIVITY, WKSTAT, INDNAME, EMPSTAT, MARST, monthyear)
+
+```
+
+
+
+#Super Categorical LFG!!
+```{r}
+
+brooke_data %>% ggplot(mapping = aes(METAREA)) + 
+  geom_histogram(stat = 'count', fill="blue") +
+  coord_flip()
+
+brooke_data %>% ggplot(mapping = aes(AGE)) + 
+  geom_histogram(stat = 'count', fill="blue") 
+
+brooke_data %>% ggplot(mapping = aes(NATIVITY)) + 
+  geom_histogram(stat = 'count', fill="blue")+
+  coord_flip()
+
+brooke_data %>% ggplot(mapping = aes(WKSTAT)) + 
+  geom_histogram(stat = 'count', fill="blue") +
+  coord_flip()
+
+brooke_data %>% ggplot(mapping = aes(INDNAME)) + 
+  geom_histogram(stat = 'count', fill="blue") +
+  coord_flip()
+
+brooke_data %>% ggplot(mapping = aes(EMPSTAT)) + 
+  geom_histogram(stat = 'count', fill="blue") +
+  coord_flip()
+
+brooke_data %>% ggplot(mapping = aes(MARST)) + 
+  geom_histogram(stat = 'count', fill="blue") +
+  coord_flip()
+
+
 ```
 
 
 
 
 
+```{r}
+#"METAREA" "AGE" "NATIVITY" "WKSTAT" "INDNAME" "EMPSTAT" "MARST"
 
-
-
-
+```
 
 
 
