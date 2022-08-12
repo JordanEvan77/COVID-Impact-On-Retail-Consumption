@@ -49,8 +49,13 @@ clean_df<- read_csv('../RawData/final_clean.csv')
 2 How has retail fared relative to other industries?
 -Jordan:
 ```{r}
+ques2 <- clean_df %>% dplyr::select(YEAR, MONTH, CPSID, WTFINL, AGE, SEX, RACE, CLASSWKR, WHYUNEMP, WKSTAT, INDNAME, covid1_dummy, covid2_dummy, covid3_dummy)
+
+
 
 #mod1
+
+
 
 #mod2
 
