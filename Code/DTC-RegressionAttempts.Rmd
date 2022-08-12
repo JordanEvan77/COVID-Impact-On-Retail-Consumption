@@ -35,7 +35,7 @@ clean_df<- read_csv('../RawData/final_clean.csv')
 ```
 
 
-=======
+
 
 ```{r}
 
@@ -44,7 +44,7 @@ df <- read_csv("../Rawdata/finaldata.csv")
 
 ```
 
->>>>>>> f6ec08846b263a42a30214fe76ded85e05c8292b
+
 1 How has COVID affected the health of the retail industry, as measured by employment?
 -Andrew:
 ```{r}
