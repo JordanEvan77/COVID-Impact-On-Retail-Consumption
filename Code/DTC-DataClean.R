@@ -156,7 +156,7 @@ final_df$INDNAME <- ifelse(is.na(final_df$INDNAME), 'Not retail', final_df$INDNA
 
 
 
-write.csv(final_df, 'Rawdata/final_clean.csv')
+write.csv(final_df, 'Rawdata/final_clean.csv') # runs!
 
 
 
