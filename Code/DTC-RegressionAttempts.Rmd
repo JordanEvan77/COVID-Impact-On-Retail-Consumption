@@ -29,6 +29,11 @@ library(patchwork)
 
 ```
 
+```{r}
+clean_df<- read_csv('../RawData/final_clean.csv')
+```
+
+
 1 How has COVID affected the health of the retail industry, as measured by employment?
 -Andrew:
 ```{r}

@@ -52,7 +52,8 @@ nulls
 #COVIDUNNAW means unable to work due to covid, this may be our outcome variable that we are looking for !
 #May be valueable to review with covidlook, which means covid kept them from being able to job search. 
   
-join_drop <- join_df2[join_df2$ IND!= 0, ]
+#join_drop <- join_df2[join_df2$ IND!= 0, ] #turn this off so I can recode
+join_drop <- join_df2
 
 join_drop <- join_drop %>% dplyr::select(-c(ASECFLAG, COVIDTELEW, COVIDPAID)) #removes 3 cols 
 
@@ -111,6 +112,8 @@ join_drop <- join_drop %>% mutate(IncNumber = case_when(FAMINC ==112 ~ 700, FAMI
 #change floor base, at industry level: 
 #This regression seems to want one observation per month, so we’d need to create a year-month variable, use 
 join_drop %>% group_by(YEAR, MONTH, monthyear) %>% summarize(RetailEmployment = sum(INDNAME == 'Retail Trade'))
+
+
 # the above is just a starting point for how we could do this. 
 #His notes say this from the spec:
 "If you want an analysis to be at the industry-month level, you should make your data be at that level too! 
@@ -145,12 +148,17 @@ final_df$race_dummy <- ifelse(final_df$RACE =='White', 1, 0)
 final_df$student_dummy <- ifelse(final_df$SCHLCOLL =='Does not attend school, college or university' | 
                                    final_df$SCHLCOLL == 'NIU', 0, 1)
 
+final_df %>% ggplot(mapping = aes(INDNAME)) + 
+  geom_histogram(stat = 'count',  fill="blue") +
+  coord_flip()
+
+#INDUSTRY: Non retail
+final_df$INDNAME <- ifelse(is.na(final_df$INDNAME), 'Not retail', final_df$INDNAME)
 
 
 
 
-
-
+write.csv(final_df, 'Rawdata/final_clean.csv')
 
 
 
