@@ -66,8 +66,9 @@ sean_data %>% count(COVIDUNAW)
 region_class <- sean_data %>% count(REGION,CLASSWKR)
 region_class
 
-ggplot(region_class, aes(x = REGION, y = n, color = CLASSWKR)) +
-  geom_col()
+ggplot(region_class, aes(x = REGION, y = n, fill = CLASSWKR)) +
+  geom_col() +
+  coord_flip()
 
 ```
 
@@ -79,7 +80,7 @@ Inc_Chld <- sean_data %>% count(IncNumber, NCHILD)
 Inc_Chld
 Inc_Chld$NCHILD <- as.factor(Inc_Chld$NCHILD)
 
-ggplot(Inc_Chld, aes(x = IncNumber, y = n, color = NCHILD)) +
+ggplot(Inc_Chld, aes(x = IncNumber, y = n, fill = NCHILD)) +
   geom_col()
 
 
@@ -94,8 +95,9 @@ sort(sean_data$REGION) %>% unique()
 
 reg_Chld$NCHILD <- as.factor(reg_Chld$NCHILD)
 
-ggplot(reg_Chld, aes(x = REGION, y = n, color = NCHILD)) +
-  geom_col()
+ggplot(reg_Chld, aes(x = REGION, y = n, fill = NCHILD)) +
+  geom_col() +
+  coord_flip()
 
 
 ```
@@ -121,10 +123,12 @@ diff_class <- sean_data %>% count(DIFFANY, CLASSWKR)
 diff_class
 
 ggplot(diff_class %>% filter(DIFFANY == 'Has difficulty'), aes(x = CLASSWKR, y = n)) +
-  geom_col()
+  geom_col() +
+  coord_flip()
 
 ggplot(diff_class %>% filter(DIFFANY == 'No difficulty'), aes(x = CLASSWKR, y = n)) +
-  geom_col()
+  geom_col() +
+  coord_flip()
 
 ```
 
@@ -143,10 +147,12 @@ covun_class
 
 
 ggplot(covun_class %>% filter(COVIDUNAW == 'No'), aes(x = CLASSWKR, y = proportion)) +
-  geom_col()
+  geom_col() +
+  coord_flip()
 
 ggplot(covun_class %>% filter(COVIDUNAW == 'Yes'), aes(x = CLASSWKR, y = proportion)) +
-  geom_col()
+  geom_col() +
+  coord_flip()
 
 ```
 
@@ -251,7 +257,8 @@ andy_data %>% ggplot(mapping = aes(STATEFIP)) +
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         panel.background = element_blank(),
-        axis.line = element_line(color = ))
+        axis.line = element_line(color = )) +
+  coord_flip()
   
 ```
 
@@ -426,7 +433,8 @@ race_hist <- andy_data %>%
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         panel.background = element_blank(),
-        axis.line = element_line(color = ))
+        axis.line = element_line(color = )) +
+  coord_flip()
 
 race_hist
 ```
@@ -528,6 +536,7 @@ brooke_data <- first_data %>%
 
 #Super Categorical LFG!!
 ```{r}
+
 
 brooke_data %>% ggplot(mapping = aes(METAREA)) + 
   geom_histogram(stat = 'count', fill="blue") +
@@ -637,7 +646,8 @@ jordan_data <- first_data %>%
   dplyr:: select(CBSASZ, SEX, HISPAN, EDUC, monthyear, SCHLCOLL, IND, IncNumber, INDNAME)
 
 jordan_data %>% ggplot(mapping = aes(CBSASZ)) + 
-  geom_histogram(stat = 'count',  fill="blue")
+  geom_histogram(stat = 'count',  fill="blue") +
+  coord_flip()
 
 
 
@@ -698,13 +708,15 @@ jordan_data %>% ggplot(mapping = aes(HISPAN)) +
   geom_histogram(stat = 'count',  fill="blue")
 
 jordan_data %>% ggplot(mapping = aes(EDUC)) + 
-  geom_histogram(stat = 'count',  fill="blue")
+  geom_histogram(stat = 'count',  fill="blue") +
+  coord_flip()
 
 jordan_data %>% ggplot(mapping = aes(monthyear)) + 
   geom_histogram(stat = 'count',  fill="blue")
 
 jordan_data %>% ggplot(mapping = aes(SCHLCOLL)) + 
-  geom_histogram(stat = 'count',  fill="blue")
+  geom_histogram(stat = 'count',  fill="blue") +
+  coord_flip()
 
 jordan_data %>% ggplot(mapping = aes(IND)) + 
   geom_histogram(stat = 'count',  fill="blue")
@@ -713,7 +725,8 @@ jordan_data %>% ggplot(mapping = aes(IncNumber)) +
   geom_histogram(stat = 'count',  fill="blue")
 
 jordan_data %>% ggplot(mapping = aes(INDNAME)) + 
-  geom_histogram(stat = 'count',  fill="blue")
+  geom_histogram(stat = 'count',  fill="blue") +
+  coord_flip()
 
 
 ```
@@ -767,11 +780,6 @@ sch_time %>%
   geom_line()
 
 ```
-
-
-
-Jordan's Thoughts: CBSASZ, SEX, HISPAN, EDUC, monthyear, SCHLCOLL, IncNumber, INDNAME are all very useful for controls and analysis.
-IND should probably just be dropped.
 
 
 
