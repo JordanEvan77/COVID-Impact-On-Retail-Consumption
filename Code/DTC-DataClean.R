@@ -148,10 +148,7 @@ final_df$race_dummy <- ifelse(final_df$RACE =='White', 1, 0)
 final_df$student_dummy <- ifelse(final_df$SCHLCOLL =='Does not attend school, college or university' | 
                                    final_df$SCHLCOLL == 'NIU', 0, 1)
 
-<<<<<<< HEAD
-final_df %>% ggplot(mapping = aes(INDNAME)) + 
-  geom_histogram(stat = 'count',  fill="blue") +
-  coord_flip()
+
 
 #INDUSTRY: Non retail
 final_df$INDNAME <- ifelse(is.na(final_df$INDNAME), 'Not retail', final_df$INDNAME)
@@ -160,14 +157,7 @@ final_df$INDNAME <- ifelse(is.na(final_df$INDNAME), 'Not retail', final_df$INDNA
 
 
 write.csv(final_df, 'Rawdata/final_clean.csv')
-=======
 
-
-write.csv(final_df, 'Rawdata/finaldata.csv')
-
-
-
->>>>>>> f6ec08846b263a42a30214fe76ded85e05c8292b
 
 
 
