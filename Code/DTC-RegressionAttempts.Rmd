@@ -29,20 +29,13 @@ library(patchwork)
 
 ```
 
-<<<<<<< HEAD
+
 ```{r}
 clean_df<- read_csv('../RawData/final_clean.csv')
 ```
 
 
 
-
-```{r}
-
-df <- read_csv("../Rawdata/finaldata.csv")
-
-
-```
 
 
 1 How has COVID affected the health of the retail industry, as measured by employment?
@@ -51,7 +44,7 @@ df <- read_csv("../Rawdata/finaldata.csv")
 
 
 ```
-1
+
 
 2 How has retail fared relative to other industries?
 -Jordan:
