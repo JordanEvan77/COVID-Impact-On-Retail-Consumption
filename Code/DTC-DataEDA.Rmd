@@ -20,6 +20,15 @@ library(Ecdat)
 library(ggstance)
 library(multcomp)
 library(NHANES)
+library(corrplot)
+library(patchwork)
+
+```
+
+
+```{r}
+
+first_data <- read_csv('../RawData/firstdata.csv')
 ```
 ## The Questions:
 
@@ -28,38 +37,760 @@ library(NHANES)
 3 Retail needs to worry about who has money to spend - what has changed about who is working and earning money?##
 
 ## Key Visuals:
+
+Sean:
 ```{r}
 
+colnames(first_data)
+
+sean_data <- first_data %>% 
+  dplyr::select(REGION, WTFINL, NCHILD, CLASSWKR, COVIDUNAW, FAMINC, IncNumber, DIFFANY, YEAR, SERIAL, MONTH, HWTFINL, CPSID, YEAR, SERIAL, MONTH, HWTFINL)
+
+
+```
+Sean:
+
+```{r}
+
+sean_data %>% count(REGION)
+sean_data %>% count(CLASSWKR)
+sean_data %>% count(NCHILD)
+sean_data %>% count(IncNumber)
+sean_data %>% count(DIFFANY)
+sean_data %>% count(YEAR)
+sean_data %>% count(COVIDUNAW)
+
+```
+```{r}
+
+region_class <- sean_data %>% count(REGION,CLASSWKR)
+region_class
+
+ggplot(region_class, aes(x = REGION, y = n, fill = CLASSWKR)) +
+  geom_col() +
+  coord_flip()
+
+```
+
+
+
+```{r}
+
+Inc_Chld <- sean_data %>% count(IncNumber, NCHILD)
+Inc_Chld
+Inc_Chld$NCHILD <- as.factor(Inc_Chld$NCHILD)
+
+ggplot(Inc_Chld, aes(x = IncNumber, y = n, fill = NCHILD)) +
+  geom_col()
+
+
+```
+
+```{r}
+
+reg_Chld <- sean_data %>% count(REGION, NCHILD)
+reg_Chld
+
+sort(sean_data$REGION) %>% unique()
+
+reg_Chld$NCHILD <- as.factor(reg_Chld$NCHILD)
+
+ggplot(reg_Chld, aes(x = REGION, y = n, fill = NCHILD)) +
+  geom_col() +
+  coord_flip()
+
+
+```
+
+```{r}
+
+diff_inc <- sean_data %>% count(DIFFANY, IncNumber)
+diff_inc$IncNumber <- as.factor(diff_inc$IncNumber)
+diff_inc
+
+ggplot(diff_inc %>% filter(DIFFANY == 'Has difficulty'), aes(x = IncNumber, y = n)) +
+  geom_col()
+
+ggplot(diff_inc %>% filter(DIFFANY == 'No difficulty'), aes(x = IncNumber, y = n)) +
+  geom_col()
+
+```
+
+
+```{r}
+
+diff_class <- sean_data %>% count(DIFFANY, CLASSWKR)
+diff_class
+
+ggplot(diff_class %>% filter(DIFFANY == 'Has difficulty'), aes(x = CLASSWKR, y = n)) +
+  geom_col() +
+  coord_flip()
+
+ggplot(diff_class %>% filter(DIFFANY == 'No difficulty'), aes(x = CLASSWKR, y = n)) +
+  geom_col() +
+  coord_flip()
+
+```
+
+```{r}
+
+covun_class <- sean_data %>% count(COVIDUNAW, CLASSWKR)
+covun_class
+
+covun_class <- covun_class %>% 
+  mutate(total = case_when(COVIDUNAW == 'No' ~ 1222494,
+                           COVIDUNAW == 'Yes' ~ 75946,
+                           TRUE ~ 1624904)) %>% 
+  mutate(proportion = n/total)
+
+covun_class
+
+
+ggplot(covun_class %>% filter(COVIDUNAW == 'No'), aes(x = CLASSWKR, y = proportion)) +
+  geom_col() +
+  coord_flip()
+
+ggplot(covun_class %>% filter(COVIDUNAW == 'Yes'), aes(x = CLASSWKR, y = proportion)) +
+  geom_col() +
+  coord_flip()
+
+```
+
+```{r}
+
+covun_inc <- sean_data %>% count(COVIDUNAW, IncNumber)
+covun_inc$IncNumber <- as.factor(covun_inc$IncNumber)
+
+covun_inc <- covun_inc %>% 
+  mutate(total = case_when(COVIDUNAW == 'No' ~ 1222494,
+                           COVIDUNAW == 'Yes' ~ 75946,
+                           TRUE ~ 1624904)) %>% 
+  mutate(proportion = n/total)
+
+covun_inc
+
+
+ggplot(covun_inc %>% filter(COVIDUNAW == 'No'), aes(x = IncNumber, y = proportion)) +
+  geom_col()
+
+ggplot(covun_inc %>% filter(COVIDUNAW == 'Yes'), aes(x = IncNumber, y = proportion)) +
+  geom_col()
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Andy:
+```{r}
+#"STATEFIP" "CPSIDP" "CITIZEN" "WHYUNEMP" "COVIDLOOK" "RACE"  "PERNUM"
+andy_data <- first_data %>% 
+  dplyr:: select(STATEFIP, CPSIDP, CITIZEN, WHYUNEMP, COVIDLOOK, RACE, PERNUM, YEAR, MONTH, monthyear)
+
+andy_data <- andy_data %>%
+  mutate(Count = 1)
+
+summary(andy_data)
+```
+
+STATEFIP -------------------------------------------------------------------------------
+Class: Character -->
+Description: State FIPS Code (starts at 01 and goes through 99) - gives literal state name
+Identifies household's state of residence
+Includes DC, and several groups of states beginning at 61.
+
+Discussion points: -->
+Remove data that isn't a literal state?
+Group by state when doing analysis?
+Better variable would be state population?
+
+```{r}
+#------------------
+# Histogram for STATEFIP
+andy_data %>% ggplot(mapping = aes(STATEFIP)) + 
+  geom_histogram(stat = 'count',  fill="cadetblue") +
+  labs(x = 'STATEFIP',
+       y = 'Count of Individuals',
+       title = 'Respondent Count by STATEFIP') +
+  theme(axis.text.x = element_text(angle = -45),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(color = )) +
+  coord_flip()
+  
+```
+
+
+
+
+CPSIDP ---------------------------------------------------------------------------------
+Class: numeric (14 digit numeric value)
+Description: unique individual identifier (primary key for person)
+Allows linking to households (primary and foreign key)
+Important to verify CPSIDP with AGE, SEX, and RACE due to inconsistent responses
+
+
+Discussion points:
+DEFINITELY INCLUDE CPSIDP, need for linking/joins
+Not sure what to plot this one against, mostly used for joining.
+
+
+
+
+
+CITIZEN --------------------------------------------------------------------------------
+Class: numeric (1, 2, 3, 4, 5, or 9)
+Description: citizenship status
+1: Born in US
+2: Born in US Outlying
+3: Born abroad of American parents
+4: Naturalized citizen
+5: Not a citizen
+9: NIU
+
+Discussion points:
+Might be worth including as a group by?
+Not critical or need to control for unless we anticipate disproportionate amount of 
+individuals in retail are not citizens?
+
+```{r}
+andy_data %>% ggplot(mapping = aes(CITIZEN)) + 
+  geom_histogram(stat = 'count',  fill="cadetblue") +
+  labs(x = 'Citizen',
+       y = 'Count',
+       title = 'Citizenship Type Counts') +
+  theme(axis.text.x = element_text(angle = -45),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(color = ))
+```
+
+
+WHYUNEMP -------------------------------------------------------------------------------
+Class: numeric (0 thru 6)
+Description: reason for unemployment ranging from 0 (NIU) to Job loser to Job Leaver to New Entrant, etc.
+
+Discussion Points:
+only useful for those who are actually unemployed
+Use for comparing groups
+Findings: Job loser - on layoff is biggest change, massive spike in 2020
+
+
+Histogram:
+```{r}
+andy_data %>% ggplot(mapping = aes(WHYUNEMP)) + 
+  geom_histogram(stat = 'count',  fill="cadetblue") +
+  labs(x = 'WHYUNEMP',
+       y = 'Count',
+       title = 'Why Unemployed Counts') +
+  theme(axis.text.x = element_text(angle = -45),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(color = ))
+```
+
+Changes over time:
+```{r}
+whyunemp_filtered <- andy_data %>%
+  group_by(WHYUNEMP, monthyear) %>%
+  summarize(Count = sum(Count)) %>%
+  filter(WHYUNEMP != 'NIU')
+
+whyunemp_chart <- whyunemp_filtered %>%
+  ggplot(mapping = aes(x = monthyear, y = Count, color = as.factor(WHYUNEMP))) +
+  geom_line() +
+  labs(x = 'Reason Why Unemployed',
+       y = 'Aggregated Count',
+       title = 'Unemployment Reason Changes Over Time',
+       subtitle = 'Excludes NIU (no response)') +
+  theme(legend.position = 'bottom',
+        axis.text.x = element_text(angle = -45),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(color = ))
+
+whyunemp_chart # view plot
+```
+
+
+COVIDLOOK ------------------------------------------------------------------------------
+Class: numeric (binary)
+Description: asks if respondents were prevented from looking for work due to covid
+01 = No = not prevented from looking for work due to covid
+02 = Yes = prevented from looking for work due to covid
+
+
+Discussion Points:
+DEFINITELY Include. Could be good for interaction terms or comparing groups.
+
+Histogram:
+```{r}
+covidlook_hist <- andy_data %>% 
+  filter(COVIDLOOK != 'NIU', COVIDLOOK != 'NA') %>%
+  ggplot(mapping = aes(COVIDLOOK)) + 
+  geom_histogram(stat = 'count',  fill="cadetblue") +
+  labs(x = 'COVIDLOOK',
+       y = 'Count',
+       title = 'COVIDLOOK Counts',
+       subtitle = 'Prevented from looking for work due to covid? Excludes NIU and NA') +
+  theme(axis.text.x = element_text(angle = -45),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(color = ))
+
+covidlook_hist
+```
+Changes over time:
+```{r}
+covidlook_line <- andy_data %>%
+  group_by(COVIDLOOK, monthyear) %>%
+  summarize(Count = sum(Count)) %>%
+  filter(COVIDLOOK != 'NIU', COVIDLOOK != 'NA') %>%
+  ggplot(mapping = aes(x = monthyear, y = Count, color = as.factor(COVIDLOOK))) +
+  geom_line() +
+  labs(x = 'Prevented from Looking for Work Due to COVID',
+       y = 'Count',
+       title = 'COVIDLOOK Over Time',
+       subtitle = 'Excludes NIU (no response) and NA') +
+  theme(legend.position = 'bottom',
+        axis.text.x = element_text(angle = -45),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(color = ))
+
+covidlook_line # view plot
+```
+
+
+
+RACE -----------------------------------------------------------------------------------
+Class: numeric (3 digits)
+Description: respondents race (and combos)
+26 possible codes
+
+
+Discussion Points:
+Possibly include as a control? 
+Do we anticipate certain groups to be more proportionally represented in retail industry?
+Histogram:
+```{r}
+race_hist <- andy_data %>% 
+  filter(RACE != 'NIU') %>%
+  ggplot(mapping = aes(RACE)) + 
+  geom_histogram(stat = 'count',  fill="cadetblue") +
+  labs(x = 'Race',
+       y = 'Count',
+       title = 'Race Histogram',
+       subtitle = 'Count of Individuals by Race') +
+  theme(axis.text.x = element_text(angle = -45),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(color = )) +
+  coord_flip()
+
+race_hist
+```
+
+
+PERNUM ---------------------------------------------------------------------------------
+Class: numeric (2 digit)
+Description: all persons listed within each household consecutively (starting w/ 1)
+Combine with YEAR, MONTH, and SERIAL uniquely identifies each person within sample
+Combining as such does not uniquely identify across samples.
+
+
+Discussion points
+DEFINITELY NEED in data frames/joins
+DON'T NEED to control for in regression.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Brooke:
+```{r}
+
+#"METAREA" "AGE" "NATIVITY" "WKSTAT" "INDNAME" "EMPSTAT" "MARST"
+
+brooke_data <- first_data %>% 
+  dplyr::select(METAREA, AGE, NATIVITY, WKSTAT, INDNAME, EMPSTAT, MARST, monthyear)
+
+```
+
+
+
+#Super Categorical LFG!!
+```{r}
+
+
+brooke_data %>% ggplot(mapping = aes(METAREA)) + 
+  geom_histogram(stat = 'count', fill="blue") +
+  coord_flip()
+
+brooke_data %>% ggplot(mapping = aes(AGE)) + 
+  geom_histogram(stat = 'count', fill="blue") 
+
+brooke_data %>% ggplot(mapping = aes(NATIVITY)) + 
+  geom_histogram(stat = 'count', fill="blue")+
+  coord_flip()
+
+brooke_data %>% ggplot(mapping = aes(WKSTAT)) + 
+  geom_histogram(stat = 'count', fill="blue") +
+  coord_flip()
+
+brooke_data %>% ggplot(mapping = aes(INDNAME)) + 
+  geom_histogram(stat = 'count', fill="blue") +
+  coord_flip()
+
+brooke_data %>% ggplot(mapping = aes(EMPSTAT)) + 
+  geom_histogram(stat = 'count', fill="blue") +
+  coord_flip()
+
+brooke_data %>% ggplot(mapping = aes(MARST)) + 
+  geom_histogram(stat = 'count', fill="blue") +
+  coord_flip()
+
+
+```
+
+
+
+
+
+```{r}
+#"METAREA" "AGE" "NATIVITY" "WKSTAT" "INDNAME" "EMPSTAT" "MARST"
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Jordan:
+```{r}
+#"CBSASZ" "SEX" "HISPAN" "EDUC" "monthyear" "SCHLCOLL" "IND"
+
+
+jordan_data <- first_data %>% 
+  dplyr:: select(CBSASZ, SEX, HISPAN, EDUC, monthyear, SCHLCOLL, IND, IncNumber, INDNAME)
+
+jordan_data %>% ggplot(mapping = aes(CBSASZ)) + 
+  geom_histogram(stat = 'count',  fill="blue") +
+  coord_flip()
+
+
+
+#PLOT OVER TIME: EMPSTAT AND FAMINC by IND:
+#FAMINC:
+top_earners <- jordan_data %>% 
+  group_by(INDNAME) %>% 
+  summarise(avg_inc = mean(IncNumber, na.rm=TRUE)) %>%  
+  arrange(desc(avg_inc)) %>% 
+  head(5)
+
+
+top_earner_data <- jordan_data %>% group_by(INDNAME, monthyear) %>% summarize(avg_inc = mean(IncNumber, na.rm=TRUE)) %>% 
+  filter(INDNAME %in% top_earners$INDNAME)
+
+#this will take a long while to actually show up after being visualized
+top_earner_data %>% 
+  ggplot(mapping = aes(x = monthyear, y = avg_inc, color = as.factor(INDNAME))) + 
+  geom_line() + theme(legend.position = "bottom")
 
 
 
 ```
 
-## Regression Approach:
-
-### Model 1:
 ```{r}
+#PLOT OVER TIME: EMPSTAT AND FAMINC by IND:
+#FAMINC:
+bot_earners <- jordan_data %>% 
+  group_by(INDNAME) %>% 
+  summarise(avg_inc = mean(IncNumber, na.rm=TRUE)) %>%  
+  arrange(avg_inc) %>% 
+  head(5)
+
+
+bot_earner_data <- jordan_data %>% group_by(INDNAME, monthyear) %>% summarize(avg_inc = mean(IncNumber, na.rm=TRUE)) %>% 
+  filter(INDNAME %in% bot_earners$INDNAME)
+
+#this will take a long while to actually show up after being visualized
+bot_earner_data %>% 
+  ggplot(mapping = aes(x = monthyear, y = avg_inc, color = as.factor(INDNAME))) + 
+  geom_line() + theme(legend.position = "bottom")
 
 
 
 ```
+THis above plot is very interesting, seems like the most struggling industries!
 
 
-### Model 2:
+
+
 ```{r}
 
+#CBSASZ, SEX, HISPAN, EDUC, monthyear, SCHLCOLL, IND, IncNumber, INDNAME
+jordan_data %>% ggplot(mapping = aes(SEX)) + 
+  geom_histogram(stat = 'count',  fill="blue")
+
+jordan_data %>% ggplot(mapping = aes(HISPAN)) + 
+  geom_histogram(stat = 'count',  fill="blue")
+
+jordan_data %>% ggplot(mapping = aes(EDUC)) + 
+  geom_histogram(stat = 'count',  fill="blue") +
+  coord_flip()
+
+jordan_data %>% ggplot(mapping = aes(monthyear)) + 
+  geom_histogram(stat = 'count',  fill="blue")
+
+jordan_data %>% ggplot(mapping = aes(SCHLCOLL)) + 
+  geom_histogram(stat = 'count',  fill="blue") +
+  coord_flip()
+
+jordan_data %>% ggplot(mapping = aes(IND)) + 
+  geom_histogram(stat = 'count',  fill="blue")
+
+jordan_data %>% ggplot(mapping = aes(IncNumber)) + 
+  geom_histogram(stat = 'count',  fill="blue")
+
+jordan_data %>% ggplot(mapping = aes(INDNAME)) + 
+  geom_histogram(stat = 'count',  fill="blue") +
+  coord_flip()
+
+
+```
+The above all look useful, but I am in favor of dropping IND in favor of just IndName.
+
+
+```{r}
+top_earner_data %>% 
+  ggplot(aes(x = factor(monthyear), y = avg_inc)) +
+  geom_boxplot() +
+  theme_bw()
 
 
 ```
 
+The variation between these two plots is fascinating, it seems that the lowest earning industries perhaps felt less of an impact on the average income!
 
-### Model 3:
 ```{r}
-
-
-
+bot_earner_data %>% 
+  ggplot(aes(x = factor(monthyear), y = avg_inc)) +
+  geom_boxplot() +
+  theme_bw()
 
 ```
+
+Change of HISPAN, EDUC, SCHLCOLL and CBSASZ over time:
+```{r}
+hisp_time <- jordan_data %>% group_by(HISPAN, monthyear) %>% summarise(n1= n())
+
+
+hisp_time %>% 
+  ggplot(mapping = aes(x = monthyear, y = n1, color = as.factor(HISPAN))) + 
+  geom_line()
+
+#-----------EDUC:
+
+educ_time <- jordan_data %>% group_by(EDUC, monthyear) %>% summarise(n2= n())
+
+
+educ_time %>% 
+  ggplot(mapping = aes(x = monthyear, y = n2, color = as.factor(EDUC))) + 
+  geom_line()
+
+#----------SCHCOLL
+
+sch_time <- jordan_data %>% group_by(SCHLCOLL, monthyear) %>% summarise(n3= n())
+
+
+sch_time %>% 
+  ggplot(mapping = aes(x = monthyear, y = n3, color = as.factor(SCHLCOLL))) + 
+  geom_line()
+
+```
+
+
+
+
+
+
+
+
+
+
+
 
 
 
