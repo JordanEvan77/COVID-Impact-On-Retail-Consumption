@@ -35,13 +35,18 @@ library(patchwork)
 
 
 ```
-
+1
 
 2 How has retail fared relative to other industries?
 -Jordan:
 ```{r}
 
+#mod1
 
+#mod2
+
+
+#mod3
 
 
 ```
