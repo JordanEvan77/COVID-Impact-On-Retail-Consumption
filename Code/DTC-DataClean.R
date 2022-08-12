@@ -147,7 +147,7 @@ final_df$student_dummy <- ifelse(final_df$SCHLCOLL =='Does not attend school, co
 
 
 
-
+write.csv(final_df, 'Rawdata/finaldata.csv')
 
 
 
