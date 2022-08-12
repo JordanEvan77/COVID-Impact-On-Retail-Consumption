@@ -741,7 +741,7 @@ bot_earner_data %>%
 
 Change of HISPAN, EDUC, SCHLCOLL and CBSASZ over time:
 ```{r}
-hisp_time <- jordan_data %>% group_by(HISPAN) %>% summarise(n1= n(HISPAN))
+hisp_time <- jordan_data %>% group_by(HISPAN, monthyear) %>% summarise(n1= n())
 
 
 hisp_time %>% 
@@ -750,7 +750,7 @@ hisp_time %>%
 
 #-----------EDUC:
 
-educ_time <- jordan_data %>% group_by(EDUC) %>% summarise(n2= n(EDUC))
+educ_time <- jordan_data %>% group_by(EDUC, monthyear) %>% summarise(n2= n())
 
 
 educ_time %>% 
@@ -759,7 +759,7 @@ educ_time %>%
 
 #----------SCHCOLL
 
-sch_time <- jordan_data %>% group_by(SCHLCOLL) %>% summarise(n3= n(SCHLCOLL))
+sch_time <- jordan_data %>% group_by(SCHLCOLL, monthyear) %>% summarise(n3= n())
 
 
 sch_time %>% 
