@@ -69,13 +69,23 @@ ques2$retail_or_not <- ifelse(ques2$INDNAME %in% c("Retail Trade"), 1, 0)
 ques2$unemper <- ifelse(ques2$WKSTAT %in% c("Unemployed, seeking part-time work", "Unemployed, seeking full-time work"), 1, 0)
 
 #mod1
-ques2m1 <- feols(employed_full ~ INDNAME + YEAR + MONTH, data= ques2 )
+ques2m1 <- feols(employed_full ~ INDNAME + YEAR + MONTH + REGION + covid1_dummy + covid2_dummy + covid3_dummy, data= ques2, 
+                 weights = ques2$WTFINL)
 etable(ques2m1) 
 
 
 resid_1 <- resid(ques2m1)
 plot(fitted(ques2m1), resid_1)
-#wald()
+
+
+```
+## WALD tests Question 2
+```{r}
+wald(ques2m1, c("YEAR", "MONTH")) #both are useful
+
+wald(ques2m1, c("REGION")) # All regions are significant
+
+wald(ques2m1, c( "covid1_dummy", "covid2_dummy", "covid3_dummy")) # all are significant and useful
 
 ```
 
@@ -83,11 +93,17 @@ plot(fitted(ques2m1), resid_1)
 
 ```{r}
 #mod2
-ques2m2 <- feols(job_loser ~ INDNAME + YEAR + MONTH, data = ques2)
+ques2m2 <- feols(job_loser ~ INDNAME + YEAR + MONTH+ REGION + covid1_dummy + covid2_dummy + covid3_dummy, data = ques2,
+                 weights = ques2$WTFINL)
 etable(ques2m2)
 
+resid_2 <- resid(ques2m2)
+plot(fitted(ques2m2), resid_2)
+
+```
 
 
+```{r}
 #mod3
 ques2m3 <- feols(unemper ~ retail_or_not + YEAR + MONTH, data = ques2)
 etable(ques2m3)
