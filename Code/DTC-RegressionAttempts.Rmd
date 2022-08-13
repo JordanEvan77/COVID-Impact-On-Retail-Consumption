@@ -51,7 +51,7 @@ clean_df<- read_csv('../RawData/final_clean.csv')
 ```{r}
 ques2 <- clean_df %>% dplyr::select(YEAR, MONTH, CPSID, WTFINL, AGE, SEX, RACE, CLASSWKR, WHYUNEMP, WKSTAT, INDNAME, covid1_dummy, covid2_dummy, covid3_dummy)
 
-#Should I control for region?
+#Should I control for region and for covid dummies?
 
 ques2$employed_full <- ifelse(ques2$WKSTAT %in% c("Full-time hours (35+), usually full-time", "Full-time hours (35+), usually part-time for economic reasons", "Full-time hours (35+), usually part-time for non-economic reasons"), 1, 0)
 
@@ -61,11 +61,12 @@ ques2$job_loser <- ifelse(ques2$WHYUNEMP %in% c("Job loser - on layoff", "Other 
 ques2$retail_or_not <- ifelse(ques2$INDNAME %in% c("Retail Trade"), 1, 0)
 
 
+ques2$unemper <- ifelse(ques2$WKSTAT %in% c("Unemployed, seeking part-time work", "Unemployed, seeking full-time work"), 1, 0)
+
 #mod1
 ques2m1 <- feols(employed_full ~ INDNAME + YEAR + MONTH, data= ques2 )
 etable(ques2m1) 
 #wald()
-
 
 
 
@@ -76,7 +77,8 @@ etable(ques2m2)
 
 
 #mod3
-
+ques2m3 <- feols(unemper ~ retail_or_not + YEAR + MONTH, data = ques2)
+etable(ques2m3)
 
 ```
 
