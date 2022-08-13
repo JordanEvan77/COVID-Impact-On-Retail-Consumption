@@ -93,8 +93,8 @@ wald(ques2m1, c( "covid1_dummy", "covid2_dummy", "covid3_dummy")) # all are sign
 
 ```{r}
 #mod2
-ques2m2 <- feols(job_loser ~ INDNAME + YEAR + MONTH+ REGION + covid1_dummy + covid2_dummy + covid3_dummy, data = ques2,
-                 weights = ques2$WTFINL)
+ques2m2 <- feols(job_loser ~ retail_or_not + INDNAME + YEAR + MONTH | REGION + covid1_dummy + covid2_dummy + covid3_dummy, 
+                 data = ques2, weights = ques2$WTFINL, vcov='hetero')
 etable(ques2m2)
 
 resid_2 <- resid(ques2m2)
@@ -102,13 +102,50 @@ plot(fitted(ques2m2), resid_2)
 
 ```
 
+```{r}
+wald(ques2m2, c("YEAR", "MONTH")) #both are useful
+
+wald(ques2m2, c("REGION")) # All regions are significant
+
+wald(ques2m2, c("covid1_dummy", "covid2_dummy", "covid3_dummy")) # all are significant and useful
+
+```
 
 ```{r}
 #mod3
-ques2m3 <- feols(unemper ~ retail_or_not + YEAR + MONTH, data = ques2)
+ques2m3 <- feols(unemper ~ retail_or_not + YEAR + MONTH | REGION + covid1_dummy + covid2_dummy + covid3_dummy, 
+                 data = ques2, weights = ques2$WTFINL, vcov='hetero')
 etable(ques2m3)
 
+resid_3 <- resid(ques2m3)
+plot(fitted(ques2m3), resid_3)
+
 ```
+```{r}
+wald(ques2m2, c("YEAR", "MONTH")) #both are useful
+
+wald(ques2m2, c("REGION")) # All regions are significant
+
+wald(ques2m2, c("covid1_dummy", "covid2_dummy", "covid3_dummy")) # all are significant and useful
+
+```
+
+### Now a Logit response for question 2:
+```{r}
+
+ques2m3 <- feols(unemper ~ retail_or_not + YEAR + MONTH | REGION + covid1_dummy + covid2_dummy + covid3_dummy, 
+                 data = ques2, weights = ques2$WTFINL, vcov='hetero')
+etable(ques2m3)
+
+resid_3 <- resid(ques2m3)
+plot(fitted(ques2m3), resid_3)
+
+
+
+```
+
+
+
 
 
 
