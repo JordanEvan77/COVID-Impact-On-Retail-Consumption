@@ -56,12 +56,23 @@ ques2 <- clean_df %>% dplyr::select(YEAR, MONTH, CPSID, WTFINL, AGE, SEX, RACE, 
 ques2$employed_full <- ifelse(ques2$WKSTAT %in% c("Full-time hours (35+), usually full-time", "Full-time hours (35+), usually part-time for economic reasons", "Full-time hours (35+), usually part-time for non-economic reasons"), 1, 0)
 
 
+ques2$job_loser <- ifelse(ques2$WHYUNEMP %in% c("Job loser - on layoff", "Other job loser"), 1, 0)
+
+ques2$retail_or_not <- ifelse(ques2$INDNAME %in% c("Retail Trade"), 1, 0)
+
 
 #mod1
 ques2m1 <- feols(employed_full ~ INDNAME + YEAR + MONTH, data= ques2 )
 etable(ques2m1) 
+#wald()
+
+
+
 
 #mod2
+ques2m2 <- feols(job_loser ~ INDNAME + YEAR + MONTH, data = ques2)
+etable(ques2m2)
+
 
 
 #mod3
