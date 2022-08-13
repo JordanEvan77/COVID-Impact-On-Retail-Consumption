@@ -26,7 +26,8 @@ library(multcomp)
 library(NHANES)
 library(corrplot)
 library(patchwork)
-
+library(haven)
+library(marginaleffects)
 ```
 
 
@@ -122,26 +123,40 @@ plot(fitted(ques2m3), resid_3)
 
 ```
 ```{r}
-wald(ques2m2, c("YEAR", "MONTH")) #both are useful
+wald(ques2m3, c("YEAR", "MONTH")) #both are useful
 
-wald(ques2m2, c("REGION")) # All regions are significant
+wald(ques2m3, c("REGION")) # All regions are significant
 
-wald(ques2m2, c("covid1_dummy", "covid2_dummy", "covid3_dummy")) # all are significant and useful
+wald(ques2m3, c("covid1_dummy", "covid2_dummy", "covid3_dummy")) # all are significant and useful
 
 ```
+
+
+## Comparing Through Etable
+```{r}
+etable(ques2m1, ques2m2, ques2m3)
+```
+
+
 
 ### Now a Logit response for question 2:
 ```{r}
 
-ques2m3 <- feols(unemper ~ retail_or_not + YEAR + MONTH | REGION + covid1_dummy + covid2_dummy + covid3_dummy, 
-                 data = ques2, weights = ques2$WTFINL, vcov='hetero')
-etable(ques2m3)
+ques2logit <- feglm(unemper ~ retail_or_not + YEAR + MONTH | REGION + covid1_dummy + covid2_dummy + covid3_dummy, 
+                 data = ques2, vcov='hetero', family = binomial(link = 'logit')) # iremoved the weights
 
-resid_3 <- resid(ques2m3)
-plot(fitted(ques2m3), resid_3)
+log_m <- marginaleffects(ques2logit)
+summary(log_m)
+
+#resid_log <- resid(ques2logit)
+#plot(fitted(ques2logit), resid_log) # looks the same as above for logit
+
+ques2 <- ques2 %>% mutate(logit_predict = predict(ques2logit, type="response"))
+ques2 <- ques2 %>% mutate(logit_index = predict(ques2logit, type="link"))
 
 
-
+ques2 %>% ggplot() +
+  geom_line(aes(x=logit_index, y=logit_predict))
 ```
 
 
