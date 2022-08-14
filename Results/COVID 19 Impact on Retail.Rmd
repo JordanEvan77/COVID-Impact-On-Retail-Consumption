@@ -12,10 +12,25 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Libraries:
 
 ```{r cars}
-summary(cars)
+library(fixest)
+library(ggplot2)
+library(tidyverse)
+library(vtable)
+library(Ecdat)
+library(ggstance)
+library(multcomp)
+library(NHANES)
+library(corrplot)
+library(patchwork)
+library(haven)
+library(marginaleffects)
 ```
 
+## Data Used:
+```{r}
+clean_df<- read_csv('../RawData/final_clean.csv')
 
+```
 
 Format the writeup as a report with sections for the main questions, not a list of bullet points. Information to include:
 
@@ -30,11 +45,31 @@ Format the writeup as a report with sections for the main questions, not a list 
 
 ```
 
+### Question 2
 ```{r}
+clean_df <- clean_df %>%
+  mutate(Count = 1)
 
+whyunemp_filtered <- clean_df %>%
+  group_by(WHYUNEMP, monthyear) %>%
+  summarize(Count = sum(Count)) %>%
+  filter(WHYUNEMP != 'NIU')
 
+whyunemp_chart <- whyunemp_filtered %>%
+  ggplot(mapping = aes(x = monthyear, y = Count, color = as.factor(WHYUNEMP))) +
+  geom_line() +
+  labs(x = 'Reason Why Unemployed',
+       y = 'Aggregated Count',
+       title = 'Unemployment Reason Changes Over Time',
+       subtitle = 'Excludes NIU (no response)') +
+  theme(legend.position = 'bottom',
+        axis.text.x = element_text(angle = -45),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(color = ))
 
-
+whyunemp_chart
 ```
 
 ```{r}
