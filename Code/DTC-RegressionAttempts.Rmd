@@ -49,6 +49,7 @@ clean_df<- read_csv('../RawData/final_clean.csv')
 
 ## 2 How has retail fared relative to other industries?
 -Jordan:
+
 ```{r}
 ques2 <- clean_df %>% dplyr::select(YEAR, MONTH, CPSID, WTFINL, AGE, SEX, RACE, CLASSWKR, WHYUNEMP, WKSTAT, INDNAME, covid1_dummy, covid2_dummy, covid3_dummy, REGION)
 
@@ -65,6 +66,7 @@ ques2$retail_or_not <- ifelse(ques2$INDNAME %in% c("Retail Trade"), 1, 0)
 
 
 
+This first regression looks at how full time employment has faired over the span of time for the covid waves, and has controls for the different waves of covid, as well as region and implements the weights argument. 
 ```{r}
 
 ques2$unemper <- ifelse(ques2$WKSTAT %in% c("Unemployed, seeking part-time work", "Unemployed, seeking full-time work"), 1, 0)

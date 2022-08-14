@@ -70,6 +70,26 @@ whyunemp_chart <- whyunemp_filtered %>%
         axis.line = element_line(color = ))
 
 whyunemp_chart
+
+```
+
+Upon closer observation, it also appears that retail_trade jobs (1) did suffer a dip, 
+```{r}
+
+#Now looking at how Full employment has faired in and out of retail.
+
+clean_df$employed_full <- ifelse(clean_df$WKSTAT %in% c("Full-time hours (35+), usually full-time", "Full-time hours (35+), usually part-time for economic reasons", "Full-time hours (35+), usually part-time for non-economic reasons"), 1, 0)
+
+clean_df$retail_or_not <- ifelse(clean_df$INDNAME %in% c("Retail Trade"), 1, 0)
+
+tot = clean_df %>%  summarize(sum(employed_full))
+
+time_full <- clean_df %>% group_by(retail_or_not, monthyear) %>% summarize(n1 = sum(employed_full)/tot)  # divide by in order to get proportions
+
+time_full %>% 
+  ggplot(mapping = aes(x = monthyear, y = n1, color = as.factor(retail_or_not))) + 
+  geom_line()
+
 ```
 
 ```{r}
