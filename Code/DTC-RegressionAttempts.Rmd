@@ -69,7 +69,6 @@ ques2$retail_or_not <- ifelse(ques2$INDNAME %in% c("Retail Trade"), 1, 0)
 This first regression looks at how full time employment has faired over the span of time for the covid waves, and has controls for the different waves of covid, as well as region and implements the weights argument. 
 ```{r}
 
-ques2$unemper <- ifelse(ques2$WKSTAT %in% c("Unemployed, seeking part-time work", "Unemployed, seeking full-time work"), 1, 0)
 
 #mod1
 ques2m1 <- feols(employed_full ~ INDNAME + YEAR + MONTH + REGION + covid1_dummy + covid2_dummy + covid3_dummy, data= ques2, 
@@ -82,6 +81,8 @@ plot(fitted(ques2m1), resid_1)
 
 
 ```
+
+
 ## WALD tests Question 2
 ```{r}
 wald(ques2m1, c("YEAR", "MONTH")) #both are useful
@@ -94,6 +95,7 @@ wald(ques2m1, c( "covid1_dummy", "covid2_dummy", "covid3_dummy")) # all are sign
 
 
 
+Certainly seems like a binary variable logit model would be more appropriate. I want to verify how job loss looks compared to job maintained first before checking that. The variable Job loser helps look at if the respondent was layed off or lost their job in any way over the span of time.
 ```{r}
 #mod2
 ques2m2 <- feols(job_loser ~ retail_or_not + INDNAME + YEAR + MONTH | REGION + covid1_dummy + covid2_dummy + covid3_dummy, 
@@ -114,8 +116,11 @@ wald(ques2m2, c("covid1_dummy", "covid2_dummy", "covid3_dummy")) # all are signi
 
 ```
 
+There is a very minor difference between loss of job and those that became unemployed, so we observe that in this regression:
 ```{r}
 #mod3
+ques2$unemper <- ifelse(ques2$WKSTAT %in% c("Unemployed, seeking part-time work", "Unemployed, seeking full-time work"), 1, 0)
+
 ques2m3 <- feols(unemper ~ retail_or_not + YEAR + MONTH | REGION + covid1_dummy + covid2_dummy + covid3_dummy, 
                  data = ques2, weights = ques2$WTFINL, vcov='hetero')
 etable(ques2m3)
@@ -141,7 +146,7 @@ etable(ques2m1, ques2m2, ques2m3)
 
 
 
-### Now a Logit response for question 2:
+### Now a Logit response for question 2, which will more directly answer the question we are looking at: How did retail do as far as loss of jobs over time, compared with other industries
 ```{r}
 
 ques2logit <- feglm(unemper ~ retail_or_not + YEAR + MONTH | REGION + covid1_dummy + covid2_dummy + covid3_dummy, 
