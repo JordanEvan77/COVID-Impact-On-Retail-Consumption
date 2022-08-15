@@ -73,7 +73,7 @@ whyunemp_chart
 
 ```
 
-Upon closer observation, it also appears that retail_trade jobs (1) did suffer a dip, 
+Upon closer observation, it also appears that retail_trade jobs (1) did suffer a dip, but proportionally it was not as severe as the other industries.
 ```{r}
 
 #Now looking at how Full employment has faired in and out of retail.
@@ -82,7 +82,10 @@ clean_df$employed_full <- ifelse(clean_df$WKSTAT %in% c("Full-time hours (35+), 
 
 clean_df$retail_or_not <- ifelse(clean_df$INDNAME %in% c("Retail Trade"), 1, 0)
 
-tot = clean_df %>%  summarize(sum(employed_full))
+tot = clean_df %>%  summarize(n = sum(employed_full)) %>% pull(n)
+
+
+
 
 time_full <- clean_df %>% group_by(retail_or_not, monthyear) %>% summarize(n1 = sum(employed_full)/tot)  # divide by in order to get proportions
 

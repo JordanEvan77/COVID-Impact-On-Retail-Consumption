@@ -121,6 +121,8 @@ There is a very minor difference between loss of job and those that became unemp
 #mod3
 ques2$unemper <- ifelse(ques2$WKSTAT %in% c("Unemployed, seeking part-time work", "Unemployed, seeking full-time work"), 1, 0)
 
+avg_unemper <- mean(ques2$unemper) #looking for what the probability of being generally unemployed is
+
 ques2m3 <- feols(unemper ~ retail_or_not + YEAR + MONTH | REGION + covid1_dummy + covid2_dummy + covid3_dummy, 
                  data = ques2, weights = ques2$WTFINL, vcov='hetero')
 etable(ques2m3)
@@ -150,22 +152,31 @@ etable(ques2m1, ques2m2, ques2m3)
 ```{r}
 
 ques2logit <- feglm(unemper ~ retail_or_not + YEAR + MONTH | REGION + covid1_dummy + covid2_dummy + covid3_dummy, 
-                 data = ques2, vcov='hetero', family = binomial(link = 'logit')) # iremoved the weights
+                 data = ques2, family = binomial(link = 'logit')) # iremoved the weights
 
 log_m <- marginaleffects(ques2logit)
 summary(log_m)
 
-#resid_log <- resid(ques2logit)
-#plot(fitted(ques2logit), resid_log) # looks the same as above for logit
+resid_log <- resid(ques2logit)
+plot(fitted(ques2logit), resid_log) # looks the same as above for logit
 
 ques2 <- ques2 %>% mutate(logit_predict = predict(ques2logit, type="response"))
 ques2 <- ques2 %>% mutate(logit_index = predict(ques2logit, type="link"))
+
+
 
 
 ques2 %>% ggplot() +
   geom_line(aes(x=logit_index, y=logit_predict))
 ```
 
+```{r}
+ques2 <- ques2 %>% mutate(logit_index = predict(ques2logit, type="link"))
+
+ques2 %>% ggplot() +
+  geom_line(aes(x=logit_index, y=logit_predict)) + geom_smooth(aes(x=logit_index, y=unemper))
+```
+# This shows that the lines are overlapping a good amount, meaning that our predictions are accurate.
 
 
 
