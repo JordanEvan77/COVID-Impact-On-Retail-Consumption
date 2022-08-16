@@ -51,7 +51,7 @@ clean_df<- read_csv('../RawData/final_clean.csv')
 -Jordan:
 
 ```{r}
-ques2 <- clean_df %>% dplyr::select(YEAR, MONTH, CPSID, WTFINL, AGE, SEX, RACE, CLASSWKR, WHYUNEMP, WKSTAT, INDNAME, covid1_dummy, covid2_dummy, covid3_dummy, REGION)
+ques2 <- clean_df %>% dplyr::select(YEAR, MONTH, monthyear, CPSID, WTFINL, AGE, SEX, RACE, CLASSWKR, WHYUNEMP, WKSTAT, INDNAME, covid1_dummy, covid2_dummy, covid3_dummy, REGION)
 
 #Should I control for region and for covid dummies?
 
@@ -157,8 +157,6 @@ ques2logit <- feglm(unemper ~ retail_or_not + YEAR + MONTH | REGION + covid1_dum
 log_m <- marginaleffects(ques2logit)
 summary(log_m)
 
-resid_log <- resid(ques2logit)
-plot(fitted(ques2logit), resid_log) # looks the same as above for logit
 
 ques2 <- ques2 %>% mutate(logit_predict = predict(ques2logit, type="response"))
 ques2 <- ques2 %>% mutate(logit_index = predict(ques2logit, type="link"))
@@ -177,7 +175,28 @@ ques2 %>% ggplot() +
   geom_line(aes(x=logit_index, y=logit_predict)) + geom_smooth(aes(x=logit_index, y=unemper))
 ```
 # This shows that the lines are overlapping a good amount, meaning that our predictions are accurate.
+#Now an attempt at making an interaction term:
+```{r}
+# Creating a dummy variable to see before and during covid. I will keep the assumption that March was the first wave of covid, but 
+#the layoffs would have initiated after covid had lingered, so I am marking in April:
 
+ques2$covid_april <- ifelse(ques2$monthyear >= '2020-04-01', 1, 0) # the 1 is layoffs in #april
+
+ques2logit2 <- feglm(unemper ~ retail_or_not*covid_april + YEAR + MONTH | REGION + covid1_dummy + covid2_dummy + covid3_dummy, 
+                 data = ques2, family = binomial(link = 'logit')) # iremoved the weights
+
+log_m2 <- marginaleffects(ques2logit2)
+summary(log_m2)
+```
+```{r}
+ques2 <- ques2 %>% mutate(logit_predict2 = predict(ques2logit2, type="response"))
+ques2 <- ques2 %>% mutate(logit_index2 = predict(ques2logit2, type="link"))
+
+
+
+ques2 %>% ggplot() +
+  geom_line(aes(x=logit_index2, y=logit_predict2)) + geom_smooth(aes(x=logit_index2, y=unemper))
+```
 
 
 
