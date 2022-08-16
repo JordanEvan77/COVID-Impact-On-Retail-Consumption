@@ -187,6 +187,8 @@ ques2logit2 <- feglm(unemper ~ retail_or_not*covid_april + YEAR + MONTH | REGION
 
 log_m2 <- marginaleffects(ques2logit2)
 summary(log_m2)
+
+etable(ques2logit2)
 ```
 ```{r}
 ques2 <- ques2 %>% mutate(logit_predict2 = predict(ques2logit2, type="response"))
@@ -197,7 +199,7 @@ ques2 <- ques2 %>% mutate(logit_index2 = predict(ques2logit2, type="link"))
 ques2 %>% ggplot() +
   geom_line(aes(x=logit_index2, y=logit_predict2)) + geom_smooth(aes(x=logit_index2, y=unemper))
 ```
-
+# the interaction term enables interesting interpretation, but is a less accurate model. 
 
 
 
