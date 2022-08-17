@@ -169,8 +169,6 @@ ques2 %>% ggplot() +
 ```
 
 ```{r}
-ques2 <- ques2 %>% mutate(logit_index = predict(ques2logit, type="link"))
-
 ques2 %>% ggplot() +
   geom_line(aes(x=logit_index, y=logit_predict)) + geom_smooth(aes(x=logit_index, y=unemper))
 ```
@@ -191,8 +189,8 @@ summary(log_m2)
 etable(ques2logit2)
 ```
 ```{r}
-ques2 <- ques2 %>% mutate(logit_predict2 = predict(ques2logit2, type="response"))
-ques2 <- ques2 %>% mutate(logit_index2 = predict(ques2logit2, type="link"))
+ques2 <- ques2 %>% mutate(logit_predict2 = predict(ques2logit2, type="response", newdata=ques2))
+ques2 <- ques2 %>% mutate(logit_index2 = predict(ques2logit2, type="link", newdata=ques2))
 
 
 
