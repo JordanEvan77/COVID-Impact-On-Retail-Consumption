@@ -158,8 +158,8 @@ log_m <- marginaleffects(ques2logit)
 summary(log_m)
 
 
-ques2 <- ques2 %>% mutate(logit_predict = predict(ques2logit, type="response"))
-ques2 <- ques2 %>% mutate(logit_index = predict(ques2logit, type="link"))
+ques2 <- ques2 %>% mutate(logit_predict = predict(ques2logit, type="response", newdata=ques2))
+ques2 <- ques2 %>% mutate(logit_index = predict(ques2logit, type="link", newdata=ques2))
 
 
 
