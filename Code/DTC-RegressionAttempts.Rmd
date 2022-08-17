@@ -152,7 +152,7 @@ etable(ques2m1, ques2m2, ques2m3)
 ```{r}
 
 ques2logit <- feglm(unemper ~ retail_or_not + YEAR + MONTH | REGION + covid1_dummy + covid2_dummy + covid3_dummy, 
-                 data = ques2, family = binomial(link = 'logit')) # iremoved the weights
+                 data = ques2, weights = ques2$WTFINL, family = binomial(link = 'logit')) # iremoved the weights
 
 log_m <- marginaleffects(ques2logit)
 summary(log_m)
@@ -183,7 +183,7 @@ ques2 %>% ggplot() +
 ques2$covid_april <- ifelse(ques2$monthyear >= '2020-04-01', 1, 0) # the 1 is layoffs in #april
 
 ques2logit2 <- feglm(unemper ~ retail_or_not*covid_april + YEAR + MONTH | REGION + covid1_dummy + covid2_dummy + covid3_dummy, 
-                 data = ques2, family = binomial(link = 'logit')) # iremoved the weights
+                 data = ques2, weights = ques2$WTFINL, family = binomial(link = 'logit')) # iremoved the weights
 
 log_m2 <- marginaleffects(ques2logit2)
 summary(log_m2)
