@@ -9,13 +9,8 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
+```{r}
 library(fixest)
 library(ggplot2)
 library(tidyverse)
@@ -202,6 +197,7 @@ ques2 %>% ggplot() +
 
 
 ## 3 Retail needs to worry about who has money to spend - what has changed about who is working and earning money?##
+
 -Brooke and Sean
 ```{r}
 
@@ -213,10 +209,132 @@ ques2 %>% ggplot() +
 
 
 
+```{r}
+
+sean_df_q3 <- clean_df %>% 
+  mutate(Working = ifelse(clean_df$WKSTAT %in% c("Full-time hours (35+), usually full-time", "Full-time hours (35+), usually part-time for economic reasons", "Full-time hours (35+), usually part-time for non-economic reasons"), 1, 0) )
+
+
+sean_df_q3$race_dummy <- as.factor(sean_df_q3$race_dummy)
+sean_df_q3$student_dummy <- as.factor(sean_df_q3$student_dummy)
 
 
 
+sean_df_q3$MARST %>% unique()
+```
 
+
+```{r}
+
+#Tried turning employment into a binary variable and running a logit regression. I run into memory issues with the marginal effects so this won't work
+
+# ques3m1 <- feglm(Working ~ CLASSWKR | covid1_dummy + covid2_dummy + covid3_dummy  , data = sean_df_q3, weights = sean_df_q3$WTFINL, family = 'logit')
+# 
+# etable(ques3m1, se = 'hetero')
+# 
+# wald(ques3m1)
+# 
+# q3m1_me <- marginaleffects(ques3m1)
+# summary(q3m1_me)
+# 
+# q3m1_pred <- sean_df_q3 %>% 
+#   mutate(logit_predict = predict(log1), logit_index = predict(log1, type = 'link'))
+
+
+```
+
+
+```{r}
+
+ques3m2 <- feols(IncNumber ~ AGE + race_dummy + student_dummy + MARST + YEAR |REGION + covid1_dummy + covid2_dummy + covid3_dummy  , data = sean_df_q3, weights = sean_df_q3$WTFINL, vcov = 'hetero')
+
+etable(ques3m2)
+
+wald(ques3m2,"AGE")
+wald(ques3m2,"race_dummy")
+wald(ques3m2,"student_dummy")
+wald(ques3m2,"MARST")
+wald(ques3m2,"YEAR")
+
+```
+Odd that Age is slightly negative so lets take a look
+```{r}
+
+table(sean_df_q3$AGE, sean_df_q3$IncNumber)
+
+plot <- sean_df_q3 %>%
+  mutate(AGE = factor(AGE)) %>% 
+  count(AGE, IncNumber) %>% 
+  na.omit()
+
+ggplot(plot, aes(x = AGE, y = n, fill = IncNumber)) +
+  geom_col() +
+  coord_flip()
+```
+
+
+
+```{r}
+
+ques3m2.5 <- feols(IncNumber ~ AGE + I(AGE^2) | REGION + covid1_dummy + covid2_dummy + covid3_dummy  , data = sean_df_q3, weights = sean_df_q3$WTFINL, vcov = 'hetero')
+
+etable(ques3m2.5)
+
+wald(ques3m2.5)
+wald(ques3m2.5, "AGE")
+
+```
+
+
+
+```{r}
+
+ques3m3 <- feols(IncNumber ~ race_dummy + student_dummy + MARST + YEAR | REGION + covid1_dummy + covid2_dummy + covid3_dummy  , data = sean_df_q3, weights = sean_df_q3$WTFINL, vcov = 'hetero')
+
+etable(ques3m3)
+
+wald(ques3m3,"race_dummy")
+wald(ques3m3,"student_dummy")
+wald(ques3m3,"MARST")
+wald(ques3m3,"YEAR")
+
+```
+
+```{r}
+
+ques3m4 <- feols(IncNumber ~ AGE + I(AGE^2) + race_dummy + student_dummy + MARST + YEAR |REGION + covid1_dummy + covid2_dummy + covid3_dummy  , data = sean_df_q3, weights = sean_df_q3$WTFINL, vcov = 'hetero')
+
+etable(ques3m4)
+
+wald(ques3m4,"AGE")
+wald(ques3m4,"race_dummy")
+wald(ques3m4,"student_dummy")
+wald(ques3m4,"MARST")
+wald(ques3m4,"YEAR")
+
+
+
+```
+
+The marriage variable being compared to is Divorced which makes sence. 
+
+```{r}
+
+etable(ques3m2,ques3m4,ques3m3)
+
+
+
+```
+
+
+```{r}
+ques3m3 <- feols(IncNumber ~ race_dummy + student_dummy + MARST + YEAR | REGION + covid1_dummy + covid2_dummy + covid3_dummy  , data = sean_df_q3, weights = sean_df_q3$WTFINL, vcov = 'hetero')
+
+etable(ques3m3)
+
+
+
+```
 
 
 
