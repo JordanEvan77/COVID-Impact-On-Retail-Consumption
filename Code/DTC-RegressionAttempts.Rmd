@@ -361,6 +361,10 @@ etable(q3m8)
 
 
 
+
+
+
+
 ```{r}
 
 sean_df_q3 <- clean_df %>% 
