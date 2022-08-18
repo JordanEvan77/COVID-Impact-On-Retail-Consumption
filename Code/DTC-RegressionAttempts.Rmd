@@ -40,11 +40,72 @@ clean_df<- read_csv('../RawData/final_clean.csv')
 
 
 ## 1 How has COVID affected the health of the retail industry, as measured by employment?
--Andrew:
+-Andy:
+Dependent variable: WKSTAT
+Explanatory variables: YEAR, MONTH, WTFINL, CLASSWKR, WHYUNEMP, WKSTAT
 ```{r}
-
-
+# select cols
+# mutate to get binary if full time work status
+# mutate to get binary if job loser
+# mutate to get binary if retail or not
+q1_df <- clean_df %>%
+  dplyr::select(YEAR, MONTH, monthyear, CPSID, PERNUM, WTFINL, CLASSWKR, WHYUNEMP, WKSTAT,
+                REGION, INDNAME, covid1_dummy, covid2_dummy, covid3_dummy) %>%
+  mutate(Employed = ifelse(WKSTAT %in% c("Full-time hours (35+), usually full-time", 
+                                         "Full-time hours (35+), usually part-time for economic reasons",
+                                         "Full-time hours (35+), usually part-time for non-economic reasons"),
+                           1, 0)) %>%
+  mutate(JobLost = ifelse(WHYUNEMP %in% c("Job loser - on layoff", "Other job loser"), 1, 0)) %>%
+  mutate(RetailInd = ifelse(INDNAME %in% c("Retail Trade"), 1, 0)) %>%
+  mutate(Cutoff = ifelse(monthyear >= '2020-03-01', 1, 0)) %>%
+  filter(RetailInd == 1) # filter to only the retail industry
 ```
+
+Question 1, Regression 1:
+Employed ~ YEAR + MONTH + REGION + covid1_dummy + covid2_dummy + covid3_dummy
+```{r}
+q1_m1 <- feols(Employed ~ YEAR + MONTH + covid1_dummy + covid2_dummy + covid3_dummy,
+               data = q1_df,
+               weights = q1_df$WTFINL,
+               vcov = 'hetero')
+etable(q1_m1)
+resid_m1 <- resid(q1_m1)
+wald(q1_m1, keep = 'covid')
+plot(fitted(q1_m1), resid_m1)
+```
+
+Question 1, Regression 2:
+```{r}
+q1_m2 <- feols(Employed ~ YEAR + MONTH | REGION + covid1_dummy + covid2_dummy + covid3_dummy,
+               data = q1_df,
+               family = binomial(link = 'logit'),
+               vcov = 'hetero')
+etable(q1_m2)
+```
+
+```{r}
+q1_m3 <- feglm(Employed ~ YEAR*Cutoff + YEAR + MONTH |
+                 REGION + covid1_dummy + covid2_dummy + covid3_dummy,
+               data = q1_df,
+               family = binomial(link = 'logit'))
+etable(q1_m3)
+```
+
+```{r}
+q1_m4 <- feglm(Employed ~ YEAR*Cutoff + YEAR + MONTH + REGION + covid1_dummy + covid2_dummy + covid3_dummy,
+               data = q1_df,
+               weights = q1_df$WTFINL,
+               vcov = 'hetero')
+etable(q1_m4)
+```
+
+Q1 all results:
+```{r}
+etable(q1_m1, q1_m2, q1_m3, q1_m4)
+```
+
+
+
 
 
 ## 2 How has retail fared relative to other industries?
