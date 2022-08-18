@@ -264,10 +264,57 @@ ques2 %>% ggplot() +
 
 ## 3 Retail needs to worry about who has money to spend - what has changed about who is working and earning money?##
 -Brooke and Sean
+
+Data for this Question:
+```{r}
+q3_df <- final_df %>% 
+  mutate(sex_binary = ifelse(SEX =="Female", 1, 0)) %>% 
+  mutate(married = ifelse(MARST == "Married, spouse present", 1, 0)) %>% 
+  mutate(Employed = ifelse(WKSTAT %in% c("Full-time hours (35+), usually full-time", 
+                                         "Full-time hours (35+), usually part-time for economic reasons",
+                                         "Full-time hours (35+), usually part-time for non-economic reasons"),
+                           1, 0)) %>% 
+  mutate(all_covid = ifelse(monthyear >= '2020-03-01', 1, 0)) %>% 
+  dplyr::select(c(WKSTAT, Employed, IncNumber,YEAR, MONTH, race_dummy, student_dummy, AGE, sex_binary, 
+                  married, NCHILD,covid1_dummy, covid2_dummy, covid3_dummy, REGION, all_covid))
+
+
+```
+
+
+Who is Working:
+Dependent variable: Employed
+Explanatory variables: YEAR, MONTH, race_dummy, student_dummy, Age, sex (WORK ON THIS ONE), MARST (make dummy), NCHILD, COVID Dummies, REGION
+
+Starting small and gradually getting bigger
 ```{r}
 
+q3m1 <- feols(Employed ~ race_dummy + student_dummy + AGE + sex_binary + covid1_dummy + covid2_dummy + covid3_dummy,
+              data=q3_df)
+etable(q3m1)
+```
 
 
+```{r}
+q3m2 <- feols(Employed ~ race_dummy + student_dummy + AGE + sex_binary + covid1_dummy + covid2_dummy + 
+                covid3_dummy + married + NCHILD + REGION,
+              data=q3_df)
+etable(q3m2) 
+
+```
+
+```{r}
+q3m3 <- feols(Employed ~ race_dummy + student_dummy + AGE + sex_binary + all_covid,
+              data=q3_df)
+etable(q3m3)
+```
+
+```{r}
+
+q3m4 <- feols(Employed ~ all_covid + AGE + race_dummy + sex_binary + 
+                I(all_covid*AGE) + I(all_covid*race_dummy) + I(all_covid*sex_binary),
+              data=q3_df)
+etable(q3m4)
 ```
 
 
@@ -279,9 +326,40 @@ ques2 %>% ggplot() +
 
 
 
+Who is Earning Money: 
+Dependent variable: IncNumber
+Explanatory variables: YEAR, MONTH, race_dummy, student_dummy, Age, sex (WORK ON THIS ONE), MARST (make dummy), NCHILD, COVID Dummies, REGION
 
 
+Starting small and gradually getting bigger
+```{r}
+q3m5 <- feols(Employed ~ race_dummy + student_dummy + AGE + sex_binary + covid1_dummy + covid2_dummy + covid3_dummy,
+              data=q3_df)
+etable(q3m5)
+```
 
+
+```{r}
+q3m6 <- feols(Employed ~ race_dummy + student_dummy + AGE + sex_binary + covid1_dummy + covid2_dummy + 
+                covid3_dummy + married + NCHILD + REGION,
+              data=q3_df)
+etable(q3m6) 
+
+```
+
+```{r}
+q3m7 <- feols(Employed ~ race_dummy + student_dummy + AGE + sex_binary + all_covid,
+              data=q3_df)
+etable(q3m7)
+```
+
+```{r}
+
+q3m8 <- feols(Employed ~ all_covid + AGE + race_dummy + sex_binary + 
+                I(all_covid*AGE) + I(all_covid*race_dummy) + I(all_covid*sex_binary),
+              data=q3_df)
+etable(q3m8)
+```
 
 
 
