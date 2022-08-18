@@ -36,7 +36,11 @@ Format the writeup as a report with sections for the main questions, not a list 
 
 1 Why you are running the analyses you are running
 
+
+
 ## Exploratory Data Analysis Visuals:
+
+### EDA for Question 1
 
 ```{r}
 
@@ -45,7 +49,8 @@ Format the writeup as a report with sections for the main questions, not a list 
 
 ```
 
-### Question 2
+### EDA for Question 2
+
 ```{r}
 clean_df <- clean_df %>%
   mutate(Count = 1)
@@ -95,6 +100,11 @@ time_full %>%
 
 ```
 
+
+
+
+### EDA for question 3
+
 ```{r}
 
 
@@ -104,11 +114,44 @@ time_full %>%
 
 
 
-2 How the analyses answer the question being asked, and what the result is 
-
-3 Carefully interpreting the results
-
+2 How the analyses answer the question being asked, and what the result is:
+3 Carefully interpreting the results:
 4 Presenting the results in an appealing way. Graphs are great, sumtable() is great, export_summs() is great - put a little effort into formatting tables and figures to make them look nice! At the very least, variable names should be in English rather than statistics-package (‘Education’ not ‘EDUC’). If you aren’t comfortable enough with ggplot to make its visualizations look nice, feel free to make graphics in Excel or Tableau or anything you like, and include them in your RMarkdown doc as images. Econometric analyses should be in R.
+
+## Models and Analysis:
+
+### Methodology and Interpretation Question 1:
+```{r}
+
+
+
+
+
+
+```
+
+
+### Methodology and Interpretation Question 2:
+```{r}
+
+
+
+
+
+
+```
+
+
+
+### Methodology and Interpretation Question 3:
+```{r}
+
+
+
+
+
+
+```
 
 5 Acknowledging the assumptions you are making in each analysis, how plausible those assumptions are in the context of your data, and any evidence you can provide backing up those assumptions
 
