@@ -87,7 +87,7 @@ etable(q1_m3)
 ```
 
 ```{r}
-q1_m4 <- feglm(Employed ~ YEAR*Cutoff + YEAR + MONTH + REGION + covid1_dummy + covid2_dummy + covid3_dummy,
+q1_m4 <- feols(Employed ~ YEAR*Cutoff + YEAR + MONTH + REGION + covid1_dummy + covid2_dummy + covid3_dummy,
                data = q1_df,
                weights = q1_df$WTFINL,
                vcov = 'hetero')
