@@ -46,54 +46,13 @@ Format the writeup as a report with sections for the main questions, not a list 
 ```
 
 ### Question 2
-```{r}
-clean_df <- clean_df %>%
-  mutate(Count = 1)
-
-whyunemp_filtered <- clean_df %>%
-  group_by(WHYUNEMP, monthyear) %>%
-  summarize(Count = sum(Count)) %>%
-  filter(WHYUNEMP != 'NIU')
-
-whyunemp_chart <- whyunemp_filtered %>%
-  ggplot(mapping = aes(x = monthyear, y = Count, color = as.factor(WHYUNEMP))) +
-  geom_line() +
-  labs(x = 'Reason Why Unemployed',
-       y = 'Aggregated Count',
-       title = 'Unemployment Reason Changes Over Time',
-       subtitle = 'Excludes NIU (no response)') +
-  theme(legend.position = 'bottom',
-        axis.text.x = element_text(angle = -45),
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        panel.background = element_blank(),
-        axis.line = element_line(color = ))
-
-whyunemp_chart
-
-```
+![](../Plots/Whyunemp.png){width=625px}
 
 Upon closer observation, it also appears that retail_trade jobs (1) did suffer a dip, but proportionally it was not as severe as the other industries.
-```{r}
 
-#Now looking at how Full employment has faired in and out of retail.
-
-clean_df$employed_full <- ifelse(clean_df$WKSTAT %in% c("Full-time hours (35+), usually full-time", "Full-time hours (35+), usually part-time for economic reasons", "Full-time hours (35+), usually part-time for non-economic reasons"), 1, 0)
-
-clean_df$retail_or_not <- ifelse(clean_df$INDNAME %in% c("Retail Trade"), 1, 0)
-
-tot = clean_df %>%  summarize(n = sum(employed_full)) %>% pull(n)
+![](../Plots/fulltime_retail.png){width=625px}
 
 
-
-
-time_full <- clean_df %>% group_by(retail_or_not, monthyear) %>% summarize(n1 = sum(employed_full)/tot)  # divide by in order to get proportions
-
-time_full %>% 
-  ggplot(mapping = aes(x = monthyear, y = n1, color = as.factor(retail_or_not))) + 
-  geom_line()
-
-```
 
 ```{r}
 
