@@ -72,7 +72,7 @@ Upon closer observation, it also appears that retail_trade jobs (1) did suffer a
 
 ## Models and Analysis:
 
-Methodology and Interpretation Question 1:
+### Methodology and Interpretation Question 1:
 ```{r}
 
 ```
@@ -81,7 +81,9 @@ Methodology and Interpretation Question 1:
 
 
 
-Methodology and Interpretation Question 2:
+### Methodology and Interpretation Question 2:
+
+The official question is "How has retail fared relative to other industries?", which I interpretted in the direction of employment status. The data set I focused on had items that we felt would be worth controlling for, like region and the year and month, along with the individual waves of covid, which would certainly be an endogenous variable that would impact if people were able to get any variety of employment. I also wanted to control for Age, Sex and Race in my final model. Additionally, since this is survey data, utilizing the weights is crucial to make sure that we don't introduce any extra back doors. 
 ```{r}
 #Dummies and Controls
 ques2 <- clean_df %>% dplyr::select(YEAR, MONTH, monthyear, CPSID, WTFINL, AGE, SEX, RACE, CLASSWKR, WHYUNEMP, WKSTAT, INDNAME, covid1_dummy, covid2_dummy, covid3_dummy, REGION) 
@@ -92,6 +94,7 @@ avg_unemper <- mean(ques2$unemper) #looking for what the probability of being ge
 
 ques2$retail_or_not <- ifelse(ques2$INDNAME %in% c("Retail Trade"), 1, 0)
 ```
+
 
 First model verifying controls
 ```{r}
@@ -106,7 +109,7 @@ etable(ques2m1)
 resid_1 <- resid(ques2m1)
 plot(fitted(ques2m1), resid_1)
 ```
-
+Observing the impact of retail_or_not, a dummy variable, it is apparent that there is a minor yet significant impact from being in retail compared to other industries, and how that relates to becoming unemployed. The residuals plot shows us that this multivariate model doesn't fit well with a dependent variable that is binary. Due to the heteroskedasticity we see it makes sense to try a logit model next to see how that performs. With our current Fixed Effects, it also becomes important to verify that they are all useful, so we proceed to do some WALD tests.
 
 
 ```{r}
@@ -114,6 +117,9 @@ wald(ques2m1, c("YEAR", "MONTH")) #both are useful
 wald(ques2m1, c("REGION")) # All regions are significant
 wald(ques2m1, c("covid1_dummy", "covid2_dummy", "covid3_dummy")) # all are significant and useful
 ```
+The Wald Tests show that Year and Month are both jointly significant, which makes a lot of sense since the impact of Covid has been very time reliant. From there we also see that Region is also a significant control, which seems logical, as Covid impacted different regions in very specific ways. Lastly, our very useful dummy variables also work well as controls which I am sure helps present a different set of time control compared to Month and Year, making these dummies particularly useful. 
+
+
 
 
 Second Model Logit:
@@ -140,7 +146,10 @@ log_m2 <- marginaleffects(ques2logit2)
 summary(log_m2)
 
 etable(ques2logit, ques2logit2)
+
+avg_unemper
 ```
+
 
 
 ```{r}
@@ -152,7 +161,7 @@ ques2 <- ques2 %>% mutate(logit_index2 = predict(ques2logit2, type="link", newda
 ques2 %>% ggplot() +
   geom_line(aes(x=logit_index2, y=logit_predict2)) + geom_smooth(aes(x=logit_index2, y=unemper))
 ```
-Interpreting this model...
+Interpreting this model based on the interaction term we see that in the Marginal Effect there is a 1.9% increase probability in being unemployed  as a retail worker. 
 
 ### Assumptions and reasoning Question 2:
 - APril assumption
