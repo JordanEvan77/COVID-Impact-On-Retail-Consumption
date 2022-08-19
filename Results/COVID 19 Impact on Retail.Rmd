@@ -152,7 +152,7 @@ Additionally, I create another dummy variable for April, to see what the interac
 ques2$covid_april <- ifelse(ques2$monthyear >= '2020-04-01', 1, 0) # the 1 is layoffs in #april
 
 ques2logit2 <- feglm(unemper ~ retail_or_not*covid_april + YEAR + MONTH | REGION + covid1_dummy + covid2_dummy + covid3_dummy +
-                       Age + Sex + Race, 
+                       AGE + SEX + RACE, 
                  data = ques2, weights = ques2$WTFINL, family = binomial(link = 'logit')) # iremoved the weights
 
 log_m2 <- marginaleffects(ques2logit2)
