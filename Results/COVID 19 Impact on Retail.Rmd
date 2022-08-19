@@ -9,22 +9,109 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+## Libraries:
 
 ```{r cars}
-summary(cars)
+library(fixest)
+library(ggplot2)
+library(tidyverse)
+library(vtable)
+library(Ecdat)
+library(ggstance)
+library(multcomp)
+library(NHANES)
+library(corrplot)
+library(patchwork)
+library(haven)
+library(marginaleffects)
 ```
 
-## Including Plots
+## Data Used:
+```{r}
+clean_df<- read_csv('../RawData/final_clean.csv')
 
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+Format the writeup as a report with sections for the main questions, not a list of bullet points. Information to include:
+
+1 Why you are running the analyses you are running
+
+## Exploratory Data Analysis Visuals:
+
+```{r}
+
+
+
+
+```
+
+### Question 2
+```{r}
+clean_df <- clean_df %>%
+  mutate(Count = 1)
+
+whyunemp_filtered <- clean_df %>%
+  group_by(WHYUNEMP, monthyear) %>%
+  summarize(Count = sum(Count)) %>%
+  filter(WHYUNEMP != 'NIU')
+
+whyunemp_chart <- whyunemp_filtered %>%
+  ggplot(mapping = aes(x = monthyear, y = Count, color = as.factor(WHYUNEMP))) +
+  geom_line() +
+  labs(x = 'Reason Why Unemployed',
+       y = 'Aggregated Count',
+       title = 'Unemployment Reason Changes Over Time',
+       subtitle = 'Excludes NIU (no response)') +
+  theme(legend.position = 'bottom',
+        axis.text.x = element_text(angle = -45),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(color = ))
+
+whyunemp_chart
+
+```
+
+Upon closer observation, it also appears that retail_trade jobs (1) did suffer a dip, but proportionally it was not as severe as the other industries.
+```{r}
+
+#Now looking at how Full employment has faired in and out of retail.
+
+clean_df$employed_full <- ifelse(clean_df$WKSTAT %in% c("Full-time hours (35+), usually full-time", "Full-time hours (35+), usually part-time for economic reasons", "Full-time hours (35+), usually part-time for non-economic reasons"), 1, 0)
+
+clean_df$retail_or_not <- ifelse(clean_df$INDNAME %in% c("Retail Trade"), 1, 0)
+
+tot = clean_df %>%  summarize(n = sum(employed_full)) %>% pull(n)
+
+
+
+
+time_full <- clean_df %>% group_by(retail_or_not, monthyear) %>% summarize(n1 = sum(employed_full)/tot)  # divide by in order to get proportions
+
+time_full %>% 
+  ggplot(mapping = aes(x = monthyear, y = n1, color = as.factor(retail_or_not))) + 
+  geom_line()
+
+```
+
+```{r}
+
+
+
+
+```
+
+
+
+2 How the analyses answer the question being asked, and what the result is 
+
+3 Carefully interpreting the results
+
+4 Presenting the results in an appealing way. Graphs are great, sumtable() is great, export_summs() is great - put a little effort into formatting tables and figures to make them look nice! At the very least, variable names should be in English rather than statistics-package (‘Education’ not ‘EDUC’). If you aren’t comfortable enough with ggplot to make its visualizations look nice, feel free to make graphics in Excel or Tableau or anything you like, and include them in your RMarkdown doc as images. Econometric analyses should be in R.
+
+5 Acknowledging the assumptions you are making in each analysis, how plausible those assumptions are in the context of your data, and any evidence you can provide backing up those assumptions
+
+6 After doing all analyses related to a given question, provide a generalized answer to the main questions.
+
+I do not expect undisputable flawless results - the data can only do so much, and we always have to rely on assumptions. However, an analysis with big flaws goes down a lot easier if you can very accurately interpret the results, point out the flaws or implausible assumptions, discuss how those flaws affect the results, and perhaps suggest an improved analysis you would run if it were feasible. Don’t claim more than your results can actually show.

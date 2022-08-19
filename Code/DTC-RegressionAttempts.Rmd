@@ -9,13 +9,8 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
+```{r}
 library(fixest)
 library(ggplot2)
 library(tidyverse)
@@ -26,31 +21,472 @@ library(multcomp)
 library(NHANES)
 library(corrplot)
 library(patchwork)
-
+library(haven)
+library(marginaleffects)
 ```
 
-1 How has COVID affected the health of the retail industry, as measured by employment?
--Andrew:
+
 ```{r}
-
-
+clean_df<- read_csv('../RawData/final_clean.csv')
 ```
 
 
-2 How has retail fared relative to other industries?
+
+
+
+## 1 How has COVID affected the health of the retail industry, as measured by employment?
+-Andy:
+Dependent variable: WKSTAT
+Explanatory variables: YEAR, MONTH, WTFINL, CLASSWKR, WHYUNEMP, WKSTAT
+```{r}
+# select cols
+# mutate to get binary if full time work status
+# mutate to get binary if job loser
+# mutate to get binary if retail or not
+q1_df <- clean_df %>%
+  dplyr::select(YEAR, MONTH, monthyear, CPSID, PERNUM, WTFINL, CLASSWKR, WHYUNEMP, WKSTAT,
+                REGION, INDNAME, covid1_dummy, covid2_dummy, covid3_dummy) %>%
+  mutate(Employed = ifelse(WKSTAT %in% c("Full-time hours (35+), usually full-time", 
+                                         "Full-time hours (35+), usually part-time for economic reasons",
+                                         "Full-time hours (35+), usually part-time for non-economic reasons"),
+                           1, 0)) %>%
+  mutate(JobLost = ifelse(WHYUNEMP %in% c("Job loser - on layoff", "Other job loser"), 1, 0)) %>%
+  mutate(RetailInd = ifelse(INDNAME %in% c("Retail Trade"), 1, 0)) %>%
+  mutate(Cutoff = ifelse(monthyear >= '2020-03-01', 1, 0)) %>%
+  filter(RetailInd == 1) # filter to only the retail industry
+```
+
+Question 1, Regression 1:
+Employed ~ YEAR + MONTH + REGION + covid1_dummy + covid2_dummy + covid3_dummy
+```{r}
+q1_m1 <- feols(Employed ~ YEAR + MONTH + covid1_dummy + covid2_dummy + covid3_dummy,
+               data = q1_df,
+               weights = q1_df$WTFINL,
+               vcov = 'hetero')
+etable(q1_m1)
+resid_m1 <- resid(q1_m1)
+wald(q1_m1, keep = 'covid')
+plot(fitted(q1_m1), resid_m1)
+```
+
+Question 1, Regression 2:
+```{r}
+q1_m2 <- feglm(Employed ~ YEAR + MONTH | REGION + covid1_dummy + covid2_dummy + covid3_dummy,
+               data = q1_df,
+               family = binomial(link = 'logit'),
+               vcov = 'hetero')
+etable(q1_m2)
+```
+
+```{r}
+q1_m3 <- feglm(Employed ~ YEAR*Cutoff + YEAR + MONTH |
+                 REGION + covid1_dummy + covid2_dummy + covid3_dummy,
+               data = q1_df,
+               family = binomial(link = 'logit'))
+etable(q1_m3)
+```
+
+```{r}
+q1_m4 <- feols(Employed ~ YEAR*Cutoff + YEAR + MONTH + REGION + covid1_dummy + covid2_dummy + covid3_dummy,
+               data = q1_df,
+               weights = q1_df$WTFINL,
+               vcov = 'hetero')
+etable(q1_m4)
+```
+
+Q1 all results:
+```{r}
+etable(q1_m1, q1_m2, q1_m3, q1_m4)
+```
+
+
+
+
+
+## 2 How has retail fared relative to other industries?
 -Jordan:
+
 ```{r}
+ques2 <- clean_df %>% dplyr::select(YEAR, MONTH, monthyear, CPSID, WTFINL, AGE, SEX, RACE, CLASSWKR, WHYUNEMP, WKSTAT, INDNAME, covid1_dummy, covid2_dummy, covid3_dummy, REGION)
+
+#Should I control for region and for covid dummies?
+
+ques2$employed_full <- ifelse(ques2$WKSTAT %in% c("Full-time hours (35+), usually full-time", "Full-time hours (35+), usually part-time for economic reasons", "Full-time hours (35+), usually part-time for non-economic reasons"), 1, 0)
 
 
+ques2$job_loser <- ifelse(ques2$WHYUNEMP %in% c("Job loser - on layoff", "Other job loser"), 1, 0)
 
+ques2$retail_or_not <- ifelse(ques2$INDNAME %in% c("Retail Trade"), 1, 0)
 
 ```
 
 
 
-3 Retail needs to worry about who has money to spend - what has changed about who is working and earning money?##
+This first regression looks at how full time employment has faired over the span of time for the covid waves, and has controls for the different waves of covid, as well as region and implements the weights argument. 
+```{r}
+
+
+#mod1
+ques2m1 <- feols(employed_full ~ INDNAME + YEAR + MONTH + REGION + covid1_dummy + covid2_dummy + covid3_dummy, data= ques2, 
+                 weights = ques2$WTFINL)
+etable(ques2m1) 
+
+
+resid_1 <- resid(ques2m1)
+plot(fitted(ques2m1), resid_1)
+
+
+```
+
+
+## WALD tests Question 2
+```{r}
+wald(ques2m1, c("YEAR", "MONTH")) #both are useful
+
+wald(ques2m1, c("REGION")) # All regions are significant
+
+wald(ques2m1, c( "covid1_dummy", "covid2_dummy", "covid3_dummy")) # all are significant and useful
+
+```
+
+
+
+Certainly seems like a binary variable logit model would be more appropriate. I want to verify how job loss looks compared to job maintained first before checking that. The variable Job loser helps look at if the respondent was layed off or lost their job in any way over the span of time.
+```{r}
+#mod2
+ques2m2 <- feols(job_loser ~ retail_or_not + INDNAME + YEAR + MONTH | REGION + covid1_dummy + covid2_dummy + covid3_dummy, 
+                 data = ques2, weights = ques2$WTFINL, vcov='hetero')
+etable(ques2m2)
+
+resid_2 <- resid(ques2m2)
+plot(fitted(ques2m2), resid_2)
+
+```
+
+```{r}
+wald(ques2m2, c("YEAR", "MONTH")) #both are useful
+
+wald(ques2m2, c("REGION")) # All regions are significant
+
+wald(ques2m2, c("covid1_dummy", "covid2_dummy", "covid3_dummy")) # all are significant and useful
+
+```
+
+There is a very minor difference between loss of job and those that became unemployed, so we observe that in this regression:
+```{r}
+#mod3
+ques2$unemper <- ifelse(ques2$WKSTAT %in% c("Unemployed, seeking part-time work", "Unemployed, seeking full-time work"), 1, 0)
+
+avg_unemper <- mean(ques2$unemper) #looking for what the probability of being generally unemployed is
+
+ques2m3 <- feols(unemper ~ retail_or_not + YEAR + MONTH | REGION + covid1_dummy + covid2_dummy + covid3_dummy, 
+                 data = ques2, weights = ques2$WTFINL, vcov='hetero')
+etable(ques2m3)
+
+resid_3 <- resid(ques2m3)
+plot(fitted(ques2m3), resid_3)
+
+```
+```{r}
+wald(ques2m3, c("YEAR", "MONTH")) #both are useful
+
+wald(ques2m3, c("REGION")) # All regions are significant
+
+wald(ques2m3, c("covid1_dummy", "covid2_dummy", "covid3_dummy")) # all are significant and useful
+
+```
+
+
+## Comparing Through Etable
+```{r}
+etable(ques2m1, ques2m2, ques2m3)
+```
+
+
+
+### Now a Logit response for question 2, which will more directly answer the question we are looking at: How did retail do as far as loss of jobs over time, compared with other industries
+```{r}
+
+ques2logit <- feglm(unemper ~ retail_or_not + YEAR + MONTH | REGION + covid1_dummy + covid2_dummy + covid3_dummy, 
+                 data = ques2, weights = ques2$WTFINL, family = binomial(link = 'logit')) # iremoved the weights
+
+log_m <- marginaleffects(ques2logit)
+summary(log_m)
+
+
+ques2 <- ques2 %>% mutate(logit_predict = predict(ques2logit, type="response", newdata=ques2))
+ques2 <- ques2 %>% mutate(logit_index = predict(ques2logit, type="link", newdata=ques2))
+
+
+
+
+ques2 %>% ggplot() +
+  geom_line(aes(x=logit_index, y=logit_predict))
+```
+
+```{r}
+ques2 %>% ggplot() +
+  geom_line(aes(x=logit_index, y=logit_predict)) + geom_smooth(aes(x=logit_index, y=unemper))
+```
+# This shows that the lines are overlapping a good amount, meaning that our predictions are accurate.
+#Now an attempt at making an interaction term:
+```{r}
+# Creating a dummy variable to see before and during covid. I will keep the assumption that March was the first wave of covid, but 
+#the layoffs would have initiated after covid had lingered, so I am marking in April:
+
+ques2$covid_april <- ifelse(ques2$monthyear >= '2020-04-01', 1, 0) # the 1 is layoffs in #april
+
+ques2logit2 <- feglm(unemper ~ retail_or_not*covid_april + YEAR + MONTH | REGION + covid1_dummy + covid2_dummy + covid3_dummy, 
+                 data = ques2, weights = ques2$WTFINL, family = binomial(link = 'logit')) # iremoved the weights
+
+log_m2 <- marginaleffects(ques2logit2)
+summary(log_m2)
+
+etable(ques2logit2)
+```
+```{r}
+ques2 <- ques2 %>% mutate(logit_predict2 = predict(ques2logit2, type="response", newdata=ques2))
+ques2 <- ques2 %>% mutate(logit_index2 = predict(ques2logit2, type="link", newdata=ques2))
+
+
+
+ques2 %>% ggplot() +
+  geom_line(aes(x=logit_index2, y=logit_predict2)) + geom_smooth(aes(x=logit_index2, y=unemper))
+```
+# the interaction term enables interesting interpretation, but is a less accurate model. 
+
+
+
+## 3 Retail needs to worry about who has money to spend - what has changed about who is working and earning money?##
+
 -Brooke and Sean
+
+Data for this Question:
 ```{r}
+q3_df <- final_df %>% 
+  mutate(sex_binary = ifelse(SEX =="Female", 1, 0)) %>% 
+  mutate(married = ifelse(MARST == "Married, spouse present", 1, 0)) %>% 
+  mutate(Employed = ifelse(WKSTAT %in% c("Full-time hours (35+), usually full-time", 
+                                         "Full-time hours (35+), usually part-time for economic reasons",
+                                         "Full-time hours (35+), usually part-time for non-economic reasons"),
+                           1, 0)) %>% 
+  mutate(all_covid = ifelse(monthyear >= '2020-03-01', 1, 0)) %>% 
+  dplyr::select(c(WKSTAT, Employed, IncNumber,YEAR, MONTH, race_dummy, student_dummy, AGE, sex_binary, 
+                  married, NCHILD,covid1_dummy, covid2_dummy, covid3_dummy, REGION, all_covid))
+
+
+```
+
+
+Who is Working:
+Dependent variable: Employed
+Explanatory variables: YEAR, MONTH, race_dummy, student_dummy, Age, sex (WORK ON THIS ONE), MARST (make dummy), NCHILD, COVID Dummies, REGION
+
+Starting small and gradually getting bigger
+```{r}
+
+q3m1 <- feols(Employed ~ race_dummy + student_dummy + AGE + sex_binary + covid1_dummy + covid2_dummy + covid3_dummy,
+              data=q3_df)
+etable(q3m1)
+```
+
+
+```{r}
+q3m2 <- feols(Employed ~ race_dummy + student_dummy + AGE + sex_binary + covid1_dummy + covid2_dummy + 
+                covid3_dummy + married + NCHILD + REGION,
+              data=q3_df)
+etable(q3m2) 
+
+```
+
+```{r}
+q3m3 <- feols(Employed ~ race_dummy + student_dummy + AGE + sex_binary + all_covid,
+              data=q3_df)
+etable(q3m3)
+```
+
+```{r}
+
+q3m4 <- feols(Employed ~ all_covid + AGE + race_dummy + sex_binary + 
+                I(all_covid*AGE) + I(all_covid*race_dummy) + I(all_covid*sex_binary),
+              data=q3_df)
+etable(q3m4)
+```
+
+
+
+
+
+
+
+
+
+
+Who is Earning Money: 
+Dependent variable: IncNumber
+Explanatory variables: YEAR, MONTH, race_dummy, student_dummy, Age, sex (WORK ON THIS ONE), MARST (make dummy), NCHILD, COVID Dummies, REGION
+
+
+Starting small and gradually getting bigger
+```{r}
+q3m5 <- feols(Employed ~ race_dummy + student_dummy + AGE + sex_binary + covid1_dummy + covid2_dummy + covid3_dummy,
+              data=q3_df)
+etable(q3m5)
+```
+
+
+```{r}
+q3m6 <- feols(Employed ~ race_dummy + student_dummy + AGE + sex_binary + covid1_dummy + covid2_dummy + 
+                covid3_dummy + married + NCHILD + REGION,
+              data=q3_df)
+etable(q3m6) 
+
+```
+
+```{r}
+q3m7 <- feols(Employed ~ race_dummy + student_dummy + AGE + sex_binary + all_covid,
+              data=q3_df)
+etable(q3m7)
+```
+
+```{r}
+
+q3m8 <- feols(Employed ~ all_covid + AGE + race_dummy + sex_binary + 
+                I(all_covid*AGE) + I(all_covid*race_dummy) + I(all_covid*sex_binary),
+              data=q3_df)
+etable(q3m8)
+```
+
+
+
+
+
+
+
+
+
+```{r}
+
+sean_df_q3 <- clean_df %>% 
+  mutate(Working = ifelse(clean_df$WKSTAT %in% c("Full-time hours (35+), usually full-time", "Full-time hours (35+), usually part-time for economic reasons", "Full-time hours (35+), usually part-time for non-economic reasons"), 1, 0) )
+
+
+sean_df_q3$race_dummy <- as.factor(sean_df_q3$race_dummy)
+sean_df_q3$student_dummy <- as.factor(sean_df_q3$student_dummy)
+
+
+
+sean_df_q3$MARST %>% unique()
+```
+
+
+```{r}
+
+#Tried turning employment into a binary variable and running a logit regression. I run into memory issues with the marginal effects so this won't work
+
+# ques3m1 <- feglm(Working ~ CLASSWKR | covid1_dummy + covid2_dummy + covid3_dummy  , data = sean_df_q3, weights = sean_df_q3$WTFINL, family = 'logit')
+# 
+# etable(ques3m1, se = 'hetero')
+# 
+# wald(ques3m1)
+# 
+# q3m1_me <- marginaleffects(ques3m1)
+# summary(q3m1_me)
+# 
+# q3m1_pred <- sean_df_q3 %>% 
+#   mutate(logit_predict = predict(log1), logit_index = predict(log1, type = 'link'))
+
+
+```
+
+
+```{r}
+
+ques3m2 <- feols(IncNumber ~ AGE + race_dummy + student_dummy + MARST + YEAR |REGION + covid1_dummy + covid2_dummy + covid3_dummy  , data = sean_df_q3, weights = sean_df_q3$WTFINL, vcov = 'hetero')
+
+etable(ques3m2)
+
+wald(ques3m2,"AGE")
+wald(ques3m2,"race_dummy")
+wald(ques3m2,"student_dummy")
+wald(ques3m2,"MARST")
+wald(ques3m2,"YEAR")
+
+```
+Odd that Age is slightly negative so lets take a look
+```{r}
+
+table(sean_df_q3$AGE, sean_df_q3$IncNumber)
+
+plot <- sean_df_q3 %>%
+  mutate(AGE = factor(AGE)) %>% 
+  count(AGE, IncNumber) %>% 
+  na.omit()
+
+ggplot(plot, aes(x = AGE, y = n, fill = IncNumber)) +
+  geom_col() +
+  coord_flip()
+```
+
+
+
+```{r}
+
+ques3m2.5 <- feols(IncNumber ~ AGE + I(AGE^2) | REGION + covid1_dummy + covid2_dummy + covid3_dummy  , data = sean_df_q3, weights = sean_df_q3$WTFINL, vcov = 'hetero')
+
+etable(ques3m2.5)
+
+wald(ques3m2.5)
+wald(ques3m2.5, "AGE")
+
+```
+
+
+
+```{r}
+
+ques3m3 <- feols(IncNumber ~ race_dummy + student_dummy + MARST + YEAR | REGION + covid1_dummy + covid2_dummy + covid3_dummy  , data = sean_df_q3, weights = sean_df_q3$WTFINL, vcov = 'hetero')
+
+etable(ques3m3)
+
+wald(ques3m3,"race_dummy")
+wald(ques3m3,"student_dummy")
+wald(ques3m3,"MARST")
+wald(ques3m3,"YEAR")
+
+```
+
+```{r}
+
+ques3m4 <- feols(IncNumber ~ AGE + I(AGE^2) + race_dummy + student_dummy + MARST + YEAR |REGION + covid1_dummy + covid2_dummy + covid3_dummy  , data = sean_df_q3, weights = sean_df_q3$WTFINL, vcov = 'hetero')
+
+etable(ques3m4)
+
+wald(ques3m4,"AGE")
+wald(ques3m4,"race_dummy")
+wald(ques3m4,"student_dummy")
+wald(ques3m4,"MARST")
+wald(ques3m4,"YEAR")
+
+
+
+```
+
+The marriage variable being compared to is Divorced which makes sence. 
+
+```{r}
+
+etable(ques3m2,ques3m4,ques3m3)
+
+
+
+```
+
+
+```{r}
+ques3m3 <- feols(IncNumber ~ race_dummy + student_dummy + MARST + YEAR | REGION + covid1_dummy + covid2_dummy + covid3_dummy  , data = sean_df_q3, weights = sean_df_q3$WTFINL, vcov = 'hetero')
+
+etable(ques3m3)
 
 
 
@@ -85,16 +521,10 @@ library(patchwork)
 
 
 
+<<<<<<< HEAD
 
 
 
 
-
-
-
-
-
-
-
-
-
+=======
+>>>>>>> 6be20b6927b4d977a43c27a3c6ef6a7c0a248534
