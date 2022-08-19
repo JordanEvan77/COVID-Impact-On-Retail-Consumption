@@ -71,7 +71,7 @@ plot(fitted(q1_m1), resid_m1)
 
 Question 1, Regression 2:
 ```{r}
-q1_m2 <- feols(Employed ~ YEAR + MONTH | REGION + covid1_dummy + covid2_dummy + covid3_dummy,
+q1_m2 <- feglm(Employed ~ YEAR + MONTH | REGION + covid1_dummy + covid2_dummy + covid3_dummy,
                data = q1_df,
                family = binomial(link = 'logit'),
                vcov = 'hetero')
