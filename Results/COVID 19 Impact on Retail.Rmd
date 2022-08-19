@@ -1,6 +1,6 @@
 ---
 title: "COVID 19 Impact On Retail"
-author: "Jordan Gropper"
+author: "Brooke, Andrew, Sean and Jordan"
 date: '2022-08-01'
 output: html_document
 ---
