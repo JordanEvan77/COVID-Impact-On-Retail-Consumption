@@ -160,6 +160,9 @@ summary(log_m2)
 
 etable(ques2logit, ques2logit2)
 
+
+```
+```{r}
 avg_unemper
 ```
 
