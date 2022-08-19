@@ -154,7 +154,7 @@ Additionally, I create another dummy variable for April, to see what the interac
 
 ques2$covid_april <- ifelse(ques2$monthyear >= '2020-04-01', 1, 0) # the 1 is layoffs in #april
 
-ques2logit2 <- feglm(unemper ~ retail_or_not + retail_or_not*covid_april + YEAR + MONTH | REGION + covid1_dummy + 
+ques2logit2 <- glm(unemper ~ retail_or_not + retail_or_not*covid_april + YEAR + MONTH + REGION + covid1_dummy + 
                      covid2_dummy + covid3_dummy + AGE + SEX + RACE, data = ques2, 
                    weights = ques2$WTFINL, family = binomial(link = 'logit')) # 
 
@@ -162,15 +162,12 @@ ques2logit2 <- feglm(unemper ~ retail_or_not + retail_or_not*covid_april + YEAR 
 
 Normal Marginal Effects:
 ```{r}
-pred <- predictions(ques2logit2, variables = list(retail_or_not=c(0,1), covid_april=c(1,0)))
-#pred <- predictions(ques2logit2, variables = list(retail_or_not= c(1))) #runs
-head(pred)
+#pred <- predictions(ques2logit2, variables = list(retail_or_not=c(0,1), covid_april=c(1,0)))
+summary(predictions(ques2logit2, variables = list(retail_or_not= 1, covid_april = 1)))
+summary(predictions(ques2logit2, variables = list(retail_or_not= 0, covid_april = 0)))
+summary(predictions(ques2logit2, variables = list(retail_or_not= 0, covid_april = 1)))
+summary(predictions(ques2logit2, variables = list(retail_or_not= 1, covid_april = 0)))
 
-```
-
-
-```{r}
-summary(pred)
 
 ```
 
@@ -184,13 +181,14 @@ In our interaction term we see that if the time is in April 2020 or later that t
 
 
 ```{r}
-ques2 <- ques2 %>% mutate(logit_predict2 = predict(ques2logit2, type="response", newdata=ques2))
-ques2 <- ques2 %>% mutate(logit_index2 = predict(ques2logit2, type="link", newdata=ques2))
+#if the above model isn't feglm, then this doesn't work right
+#ques2 <- ques2 %>% mutate(logit_predict2 = predict(ques2logit2, type="response", newdata=ques2))
+#ques2 <- ques2 %>% mutate(logit_index2 = predict(ques2logit2, type="link", newdata=ques2))
 
 
 
-ques2 %>% ggplot() +
-  geom_line(aes(x=logit_index2, y=logit_predict2)) + geom_smooth(aes(x=logit_index2, y=unemper))
+#ques2 %>% ggplot() +
+#  geom_line(aes(x=logit_index2, y=logit_predict2)) + geom_smooth(aes(x=logit_index2, y=unemper))
 ```
 Interpreting this model based on the interaction term we see that in the Marginal Effect there is a 1.9% increase probability in being unemployed  as a retail worker. 
 
