@@ -162,19 +162,15 @@ ques2logit2 <- feglm(unemper ~ retail_or_not + retail_or_not*covid_april + YEAR 
 
 Normal Marginal Effects:
 ```{r}
-pred <- predictions(ques2logit2, variables = list(retail_or_not = c(0, 1), april_covid= c(0,1)))
+pred <- predictions(ques2logit2, variables = list(retail_or_not=c(0,1), covid_april=c(1,0)))
+#pred <- predictions(ques2logit2, variables = list(retail_or_not= c(1))) #runs
 head(pred)
 
 ```
 
-Interpretted Interaction Term:
+
 ```{r}
-int_eff <- intEff(ques2logit2, c("retail_or_not", "covid_april"), ques2)
-summary(int_eff)
-
-
-#etable(ques2logit, ques2logit2)
-
+summary(pred)
 
 ```
 
