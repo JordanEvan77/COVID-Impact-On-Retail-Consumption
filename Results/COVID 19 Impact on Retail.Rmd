@@ -151,21 +151,27 @@ Additionally, I create another dummy variable for April, to see what the interac
 
 ques2$covid_april <- ifelse(ques2$monthyear >= '2020-04-01', 1, 0) # the 1 is layoffs in #april
 
-ques2logit2 <- feglm(unemper ~ retail_or_not*covid_april + YEAR + MONTH | REGION + covid1_dummy + covid2_dummy + covid3_dummy +
-                       AGE + SEX + RACE, 
-                 data = ques2, weights = ques2$WTFINL, family = binomial(link = 'logit')) # iremoved the weights
+ques2logit2 <- glm(unemper ~ retail_or_not + retail_or_not*covid_april + YEAR + MONTH | REGION + covid1_dummy + 
+                     covid2_dummy + covid3_dummy + AGE + SEX + RACE, data = ques2, weights = ques2$WTFINL, family = binomial(link = 'logit')) # iremoved the weights
 
 log_m2 <- marginaleffects(ques2logit2)
 summary(log_m2)
 
-etable(ques2logit, ques2logit2)
+
+int_eff <- intEff(ques2logit2, c("retail_or_not", "covid_april"), ques2)
+summary(int_eff)
+
+
+#etable(ques2logit, ques2logit2)
 
 
 ```
 ```{r}
 avg_unemper
 ```
+We see that retail_or_not increases probability of being unemployed by 1.38%, which is ontop of the average unemployment rate of 3.23% for the sample. 
 
+In our interaction term we see that if the time is in April 2020 or later that there is an increased....
 
 
 ```{r}
