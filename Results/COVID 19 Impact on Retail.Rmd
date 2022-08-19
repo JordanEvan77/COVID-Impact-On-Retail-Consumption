@@ -77,6 +77,10 @@ Methodology and Interpretation Question 1:
 
 ```
 
+### Assumptions and reasoning Question 1:
+
+
+
 Methodology and Interpretation Question 2:
 ```{r}
 #Dummies and Controls
@@ -150,7 +154,8 @@ ques2 %>% ggplot() +
 ```
 Interpreting this model...
 
-
+### Assumptions and reasoning Question 2:
+- APril assumption
 
 Methodology and Interpretation Question 3:
 ```{r}
@@ -159,7 +164,11 @@ Methodology and Interpretation Question 3:
 
 3 Carefully interpreting the results
 
-4 Presenting the results in an appealing way. Graphs are great, sumtable() is great, export_summs() is great - put a little effort into formatting tables and figures to make them look nice! At the very least, variable names should be in English rather than statistics-package (‘Education’ not ‘EDUC’). If you aren’t comfortable enough with ggplot to make its visualizations look nice, feel free to make graphics in Excel or Tableau or anything you like, and include them in your RMarkdown doc as images. Econometric analyses should be in R.
+
+
+### Assumptions and reasoning Question 3:
+
+
 
 5 Acknowledging the assumptions you are making in each analysis, how plausible those assumptions are in the context of your data, and any evidence you can provide backing up those assumptions
 
