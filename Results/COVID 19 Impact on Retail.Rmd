@@ -180,7 +180,7 @@ summary(predictions(ques2logit2, newdata = datagrid(retail_or_not= 0, covid_apri
 ```
 These are also general probabilities.
 First Scenario, if no one was a retail employee, before April of 2020 we would anticipate having an unemployment rate of 1.42%.
-Second summary shows that non retail workers post April 1st would anticipate an unemployment rate of 3.09%, which is lower than for retail workers, however we do see an increased growth of risk for both retail and non retail. 
+Second summary shows that non retail workers post April 1st would anticipate an unemployment rate of 3.09%, which is lower than for retail workers, however we do see an increased growth of risk for unemployment in both retail and non retail. 
 
 ```{r}
 avg_unemper
