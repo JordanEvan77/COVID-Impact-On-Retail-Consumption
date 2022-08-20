@@ -355,6 +355,7 @@ whyunemp_chart <- whyunemp_filtered %>%
         axis.line = element_line(color = ))
 
 whyunemp_chart # view plot
+ggsave(filename = "../Plots/Whyunemp.png", plot = whyunemp_chart)
 ```
 
 
@@ -780,6 +781,39 @@ sch_time %>%
   geom_line()
 
 ```
+
+
+```{r}
+#Now looking at how Full employment has faired in and out of retail.
+
+clean_df$employed_full <- ifelse(clean_df$WKSTAT %in% c("Full-time hours (35+), usually full-time", "Full-time hours (35+), usually part-time for economic reasons", "Full-time hours (35+), usually part-time for non-economic reasons"), 1, 0)
+
+clean_df$retail_or_not <- ifelse(clean_df$INDNAME %in% c("Retail Trade"), 1, 0)
+
+tot = clean_df %>%  summarize(n = sum(employed_full)) %>% pull(n)
+
+
+
+
+time_full <- clean_df %>% group_by(retail_or_not, monthyear) %>% summarize(n1 = sum(employed_full)/tot)
+
+timer_full <- time_full %>% 
+  ggplot(mapping = aes(x = monthyear, y = n1, color = as.factor(retail_or_not))) + 
+  geom_line() +
+  labs(x = 'Year and Month',
+       y = 'Proportion of Full Time Employment',
+       title = 'Retail suffered less, but also started with less full time employment',
+       subtitle = '1 (blue) is retail')
+
+timer_full
+
+```
+
+
+```{r}
+ggsave(filename = "../Plots/fulltime_retail.png", plot = timer_full)
+```
+
 
 
 
