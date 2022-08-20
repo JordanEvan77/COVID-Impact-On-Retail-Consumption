@@ -397,6 +397,12 @@ Interpreting this model
 
 
 
+
+
+
+
+
+
 5 Acknowledging the assumptions you are making in each analysis, how plausible those assumptions are in the context of your data, and any evidence you can provide backing up those assumptions
 
 
@@ -433,9 +439,12 @@ In regards to Question 2, "How has retail fared relative to other industries?"  
 
 
 For Question 3...
->>>>>>> e1f15924acf0ab85c078b89ec557a53835d37d16
 
+Retail needs to worry about who has money to spend - what has changed about who is working and earning money?
 
+The trends we saw before the first covid spikes at the end of the first quarter 2020 in regards to the workforce and income distribution still exist now that things are returning to normal in regards to the pandemic. The people who are employed and have money tend to be younger, white, and female. There were changes in every group as each wave of covid began and the recovery for everyone has been different but overall not much has changed in who has money. 
+
+Something to consider for further research is the rate of recovery for different demographics to pre-pandemic levels. Also tracking individuals to see if people leaving an industry returned to that industry or took this as an opportunity to change careers. 
 
 
 
