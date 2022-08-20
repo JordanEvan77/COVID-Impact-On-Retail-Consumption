@@ -136,7 +136,7 @@ Second Model Logit:
 For the second model, a Logit with Binary Dependent Variable, the controls are relatively the same as the first model. I was able to still include the weights argument, and get an output on Marginal Fixed Effects. This model enables us to interpret the impact of retail employment on being unemployed through probability.
 ```{r}
 ques2logit <- feglm(unemper ~ retail_or_not + YEAR + MONTH | REGION + covid1_dummy + covid2_dummy + covid3_dummy, 
-                 data = ques2, weights = ques2$WTFINL, family = binomial(link = 'logit')) # iremoved the weights
+                 data = ques2, weights = ques2$WTFINL, family = binomial(link = 'logit')) # 
 
 log_m <- marginaleffects(ques2logit)
 summary(log_m)
@@ -164,24 +164,32 @@ Normal Marginal Effects:
 ```{r}
 #pred <- predictions(ques2logit2, variables = list(retail_or_not=c(0,1), covid_april=c(1,0)))
 summary(predictions(ques2logit2, newdata = datagrid(retail_or_not= 1, covid_april = 1)))
-summary(predictions(ques2logit2, newdata = datagrid(retail_or_not= 0, covid_april = 0)))
+summary(predictions(ques2logit2, newdata = datagrid(retail_or_not= 1, covid_april = 0)))
 ```
+Interpretation: 
+These are overall probabilities. For the first scenario, if everyone was a retail worker after April 1st, we would anticipate an unemployment rate of 4.85%
+Second Scenario indicates that for retail workers before the pandemic the risk of unemployment was 2.3%, meaning if we only had 1000 retail workers pre pandemic, we would expect 23 of them to be unemployed.
+
+So there is certainly an increased risk of unemployment overtime for retail workers. 
 
 ```{r}
-summary(predictions(ques2logit2, newdata = datagrid(retail_or_not= 1, covid_april = 0)))
+summary(predictions(ques2logit2, newdata = datagrid(retail_or_not= 0, covid_april = 0)))
 summary(predictions(ques2logit2, newdata = datagrid(retail_or_not= 0, covid_april = 1)))
 
 ```
-
+These are also general probabilities.
+First Scenario, if no one was a retail employee, before April of 2020 we would anticipate having an unemployment rate of 1.42%.
+Second summary shows that non retail workers post April 1st would anticipate an unemployment rate of 3.09%, which is lower than for retail workers, however we do see an increased growth of risk for both retail and non retail. 
 
 ```{r}
 avg_unemper
 ```
-We see that retail_or_not increases probability of being unemployed by 1.38%, which is ontop of the average unemployment rate of 3.23% for the sample. 
+We see that retail in general has a post covid higher than average rate of unemployment from 3.22% to 4.85%
 
-In our interaction term we see that if the time is in April 2020 or later that there is an increased....
+In our interaction term we see that if the time is in April 2020 or later that there is an increased risk of unemployment across all industries, with retail having the highest risk. 
 
 
+Here is a visual which portrays the accuracy of the final logit model. 
 ```{r}
 ques2 <- ques2 %>% mutate(logit_predict2 = predict(ques2logit2, type="response", newdata=ques2))
 ques2 <- ques2 %>% mutate(logit_index2 = predict(ques2logit2, type="link", newdata=ques2))
@@ -191,7 +199,7 @@ ques2 <- ques2 %>% mutate(logit_index2 = predict(ques2logit2, type="link", newda
 ques2 %>% ggplot() +
   geom_line(aes(x=logit_index2, y=logit_predict2)) + geom_smooth(aes(x=logit_index2, y=unemper))
 ```
-Interpreting this model based on the interaction term we see that in the Marginal Effect there is a 1.9% increase probability in being unemployed  as a retail worker. 
+The curve and predicted values are relatively overlapping and correct over the index, which shows that our model is relatively healthy. 
 
 ### Assumptions and reasoning Question 2:
 - A key assumption from my last model is that I used April is the cut off time for before and after Covid in my interaction term. I feel that this is justified through the exploratory analysis we did which portrays how the strongest effects of Covid on income and employment began after March, in April. Additionally, I feel this is justified because logically speaking, closures, stay at home orders and nation wide lock-downs didn't start until the very tail end of March. 
