@@ -472,7 +472,7 @@ wald(ques3m4,"YEAR")
 
 ```
 
-The marriage variable being compared to is Divorced which makes sence. 
+The marriage variable being compared to is Divorced which makes sense. 
 
 ```{r}
 
