@@ -100,6 +100,8 @@ ques2$unemper <- ifelse(ques2$WKSTAT %in% c("Unemployed, seeking part-time work"
 avg_unemper <- mean(ques2$unemper) #looking for what the probability of being generally unemployed is
 
 ques2$retail_or_not <- ifelse(ques2$INDNAME %in% c("Retail Trade"), 1, 0)
+
+ques2$covid_april <- ifelse(ques2$monthyear >= '2020-04-01', 1, 0) # the 1 is layoffs in #april
 ```
 
 
@@ -152,22 +154,19 @@ Additionally, I create another dummy variable for April, to see what the interac
 # Creating a dummy variable to see before and during covid. I will keep the assumption that March was the first wave of covid, but 
 #the layoffs would have initiated after covid had lingered, so I am marking in April:
 
-ques2$covid_april <- ifelse(ques2$monthyear >= '2020-04-01', 1, 0) # the 1 is layoffs in #april
-
-ques2logit2 <- glm(unemper ~ retail_or_not + retail_or_not*covid_april + YEAR + MONTH + REGION + covid1_dummy + 
-                     covid2_dummy + covid3_dummy + AGE + SEX + RACE, data = ques2, 
-                   weights = ques2$WTFINL, family = binomial(link = 'logit')) # 
+ques2logit2 <- feglm(unemper ~ retail_or_not*covid_april + YEAR + MONTH + covid1_dummy + 
+                     covid2_dummy + covid3_dummy + AGE + SEX + RACE + REGION, 
+                   data = ques2, weights = ques2$WTFINL, family = binomial(link = 'logit')) # 
 
 ```
 
 Normal Marginal Effects:
 ```{r}
 #pred <- predictions(ques2logit2, variables = list(retail_or_not=c(0,1), covid_april=c(1,0)))
-summary(predictions(ques2logit2, variables = list(retail_or_not= 1, covid_april = 1)))
-summary(predictions(ques2logit2, variables = list(retail_or_not= 0, covid_april = 0)))
-summary(predictions(ques2logit2, variables = list(retail_or_not= 0, covid_april = 1)))
-summary(predictions(ques2logit2, variables = list(retail_or_not= 1, covid_april = 0)))
-
+summary(predictions(ques2logit2, newdata = datagrid(retail_or_not= 1, covid_april = 1)))
+summary(predictions(ques2logit2, newdata = datagrid(retail_or_not= 0, covid_april = 0)))
+summary(predictions(ques2logit2, newdata = datagrid(retail_or_not= 1, covid_april = 0)))
+summary(predictions(ques2logit2, newdata = datagrid(retail_or_not= 0, covid_april = 1)))
 
 ```
 
