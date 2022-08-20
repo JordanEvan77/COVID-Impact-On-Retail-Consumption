@@ -105,7 +105,7 @@ ques2$covid_april <- ifelse(ques2$monthyear >= '2020-04-01', 1, 0) # the 1 is la
 ```
 
 
-First model verifying controls:
+### First model verifying controls:
 unemper is our dependent model, which I took both seeking full time and seeking part time responses. It is possible that I could have included responses for people that had gone from full time down to part time, but I felt that full unemployment measures would better describe the health of retail compared to other industries.
 ```{r}
 ques2m1 <- feols(unemper ~ retail_or_not + YEAR + MONTH | REGION + covid1_dummy + covid2_dummy + covid3_dummy, 
@@ -119,6 +119,8 @@ etable(ques2m1)
 resid_1 <- resid(ques2m1)
 plot(fitted(ques2m1), resid_1)
 ```
+
+
 Observing the impact of retail_or_not, a dummy variable, it is apparent that there is a minor yet significant impact from being in retail compared to other industries, and how that relates to becoming unemployed. The residuals plot shows us that this multivariate model doesn't fit well with a dependent variable that is binary. Due to the heteroskedasticity we see it makes sense to try a logit model next to see how that performs. With our current Fixed Effects, it also becomes important to verify that they are all useful, so we proceed to do some WALD tests.
 
 
@@ -132,7 +134,7 @@ The Wald Tests show that Year and Month are both jointly significant, which make
 
 
 
-Second Model Logit:
+### Second Model Logit:
 For the second model, a Logit with Binary Dependent Variable, the controls are relatively the same as the first model. I was able to still include the weights argument, and get an output on Marginal Fixed Effects. This model enables us to interpret the impact of retail employment on being unemployed through probability.
 ```{r}
 ques2logit <- feglm(unemper ~ retail_or_not + YEAR + MONTH | REGION + covid1_dummy + covid2_dummy + covid3_dummy, 
@@ -143,18 +145,17 @@ summary(log_m)
 
 ```
 
-From the Marginal Effect we see that the impact is fairly low, and has little to no significance.
+From the Marginal Effect we see that the impact is fairly low, and has little to no significance. Upon observing this, reflecting on our real question brings in a time parameter. We are controlling for time currently, but it is relevant to think of utilizing fixed effects across a lot of our demographic variables, which leave a lot of open back doors. Additionally, observing our changes over time would be best to do with a dummy variable. I want to see what the impact of covid was on retail employment compared to other industries, so isolating that time in our model is crucial. 
 
 
-
-Final Model Logit with Interaction Term:
-For the final Model I added in the extra set of controls (Age, Sex, Race), which we will verify are still useful with a WALD test.
-Additionally, I create another dummy variable for April, to see what the interaction is between being before and after April is on Retail employment compared to other industries.
+### Final Model Logit with Interaction Term:
+For the final Model I added in the extra set of controls (Age, Sex, Race) as fixed effects. These are all spanning categories for our variable of interest (unemployment for retail), so controlling for them should help to close back doors. Since I am not concerned about their coefficient power or impact on the model, no WALD test will be used to verify the power of impact. 
+Additionally, I create another dummy variable for April, to see what the interaction is between being before and after April is on Retail employment compared to other industries. Of course the weights from the data are also still present in this final model. 
 ```{r}
 # Creating a dummy variable to see before and during covid. I will keep the assumption that March was the first wave of covid, but 
 #the layoffs would have initiated after covid had lingered, so I am marking in April:
 
-ques2logit2 <- feglm(unemper ~ retail_or_not*covid_april + YEAR + MONTH + covid1_dummy + 
+ques2logit2 <- feglm(unemper ~ retail_or_not*covid_april + YEAR + MONTH | covid1_dummy + 
                      covid2_dummy + covid3_dummy + AGE + SEX + RACE + REGION, 
                    data = ques2, weights = ques2$WTFINL, family = binomial(link = 'logit')) # 
 
