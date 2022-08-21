@@ -64,13 +64,15 @@ Upon closer observation, it also appears that retail_trade jobs (1) did suffer a
 
 
 ### EDA for Question 3:
-```{r}
+![](../Plots/income_correlation.png){width=625px}
 
 
-# 2 Visuals
+In trying to establish how income has changed since covid began impacting the economy we can look at the correlation between income and other attributes within the data. Not surprisingly there is a strong positive tie between employment and income, and a negative correlation with the covid waves as well as student status. 
 
-```
+![](../Plots/age_emp.png){width=500px}
 
+
+When it comes to the age breakdown of who is employed it seems that even through the dip in average employment rate for all groups the same trends appear in that traditional working ages between 20-60 are mostly employed. 
 
 
 
@@ -81,6 +83,37 @@ Upon closer observation, it also appears that retail_trade jobs (1) did suffer a
 
 ### Methodology and Interpretation Question 1:
 ```{r}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ```
 
@@ -244,6 +277,11 @@ To further research this question, it would be very helpful to gather more data 
 
 For Question 3...
 
+Retail needs to worry about who has money to spend - what has changed about who is working and earning money?
+
+The trends we saw before the first covid spikes at the end of the first quarter 2020 in regards to the workforce and income distribution still exist now that things are returning to normal in regards to the pandemic. The people who are employed and have money tend to be younger, white, and female. There were changes in every group as each wave of covid began and the recovery for everyone has been different but overall not much has changed in who has money. 
+
+Something to consider for further research is the rate of recovery for different demographics to pre-pandemic levels. Also tracking individuals to see if people leaving an industry returned to that industry or took this as an opportunity to change careers. 
 
 
 
