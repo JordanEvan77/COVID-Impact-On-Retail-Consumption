@@ -205,11 +205,19 @@ sum2 <- summary(predictions(ques2logit2, newdata = datagrid(retail_or_not= 1, co
 kable(x=sum2, format = "html", caption = "Before Covid Retail Unemployment")
 ```
 
+
+
+
 Interpretation: 
 These are overall probabilities. For the first scenario, if everyone was a retail worker after April 1st, we would anticipate an unemployment rate of 4.85%
 Second Scenario indicates that for retail workers before the pandemic the risk of unemployment was 2.3%, meaning if we only had 1000 retail workers pre pandemic, we would expect 23 of them to be unemployed.
 
 So there is certainly an increased risk of unemployment overtime for retail workers. 
+
+
+
+
+
 
 ```{r}
 sum3 <- summary(predictions(ques2logit2, newdata = datagrid(retail_or_not= 0, covid_april = 0)))
@@ -245,6 +253,8 @@ ques2 %>% ggplot() +
   geom_line(aes(x=logit_index2, y=logit_predict2)) + geom_smooth(aes(x=logit_index2, y=unemper)) +
   labs(x = "Logit Index", y = "Logit Prediction", title = "Overlap Accuracy of Model Predictions")
 ```
+
+
 The curve and predicted values are relatively overlapping and correct over the index, which shows that our model is relatively healthy. 
 
 ### Assumptions and reasoning Question 2:
