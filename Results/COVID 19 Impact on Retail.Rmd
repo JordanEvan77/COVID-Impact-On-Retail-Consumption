@@ -1,7 +1,7 @@
 ---
 title: "COVID 19 Impact On Retail"
 author: "Brooke, Andrew, Sean and Jordan"
-date: '2022-08-20'
+date: '2022-08-01'
 output: html_document
 ---
 
@@ -282,9 +282,6 @@ Retail needs to worry about who has money to spend - what has changed about who 
 The trends we saw before the first covid spikes at the end of the first quarter 2020 in regards to the workforce and income distribution still exist now that things are returning to normal in regards to the pandemic. The people who are employed and have money tend to be younger, white, and female. There were changes in every group as each wave of covid began and the recovery for everyone has been different but overall not much has changed in who has money. 
 
 Something to consider for further research is the rate of recovery for different demographics to pre-pandemic levels. Also tracking individuals to see if people leaving an industry returned to that industry or took this as an opportunity to change careers. 
-
-
-
 
 
 
