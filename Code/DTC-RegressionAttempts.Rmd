@@ -71,7 +71,7 @@ plot(fitted(q1_m1), resid_m1)
 
 Question 1, Regression 2:
 ```{r}
-q1_m2 <- feglm(Employed ~ YEAR + MONTH | REGION + covid1_dummy + covid2_dummy + covid3_dummy,
+q1_m2 <- feols(Employed ~ YEAR + MONTH | REGION + covid1_dummy + covid2_dummy + covid3_dummy,
                data = q1_df,
                family = binomial(link = 'logit'),
                vcov = 'hetero')
@@ -87,7 +87,7 @@ etable(q1_m3)
 ```
 
 ```{r}
-q1_m4 <- feols(Employed ~ YEAR*Cutoff + YEAR + MONTH + REGION + covid1_dummy + covid2_dummy + covid3_dummy,
+q1_m4 <- feglm(Employed ~ YEAR*Cutoff + YEAR + MONTH + REGION + covid1_dummy + covid2_dummy + covid3_dummy,
                data = q1_df,
                weights = q1_df$WTFINL,
                vcov = 'hetero')
@@ -472,7 +472,7 @@ wald(ques3m4,"YEAR")
 
 ```
 
-The marriage variable being compared to is Divorced which makes sence. 
+The marriage variable being compared to is Divorced which makes sense. 
 
 ```{r}
 
@@ -491,6 +491,22 @@ etable(ques3m3)
 
 
 ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
