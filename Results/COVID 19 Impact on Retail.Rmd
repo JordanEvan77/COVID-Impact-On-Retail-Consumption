@@ -174,8 +174,9 @@ ques2logit <- feglm(unemper ~ retail_or_not + YEAR + MONTH | REGION + covid1_dum
                  data = ques2, weights = ques2$WTFINL, family = binomial(link = 'logit')) # 
 
 log_m <- marginaleffects(ques2logit)
-summary(log_m)
+log_1 <- summary(log_m)
 
+kable(x=log_1, format = "html", caption = "Low Marginal Effect of Retail or Not")
 ```
 
 From the Marginal Effect we see that the impact is fairly low, and has little to no significance. Upon observing this, reflecting on our real question brings in a time parameter. We are controlling for time currently, but it is relevant to think of utilizing fixed effects across a lot of our demographic variables, which leave a lot of open back doors. Additionally, observing our changes over time would be best to do with a dummy variable. I want to see what the impact of covid was on retail employment compared to other industries, so isolating that time in our model is crucial. 
@@ -216,6 +217,9 @@ kable(x=sum3, format = "html", caption = "Before Covid Non-Retail Unemployment")
 sum4 <- summary(predictions(ques2logit2, newdata = datagrid(retail_or_not= 0, covid_april = 1)))
 kable(x=sum4, format = "html", caption = "During Covid Non-Retail Unemployment")
 ```
+
+
+
 
 Interpretation:
 These are also general probabilities.
