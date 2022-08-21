@@ -266,10 +266,76 @@ The curve and predicted values are relatively overlapping and correct over the i
 
 -Assumptions about other industries are that there are no serious outliers that would cripple the comparison between non retail and retail jobs. Our EDA did verify that the average spread of job loss was unique between industries, but also didn't have any that were completely untouched or outliers of lost jobs. 
 
-Methodology and Interpretation Question 3:
+### Methodology and Interpretation Question 3:
+
+The objective for question three is to determine what groups of people are employed post-covid and who is making money. Then analyzing if those groups have changed from before the pandemic began. 
+
+First we look at basic demographics such as age, gender, student status, and race to determine how much each category contributes to employment status between each of the covid waves. 
+
 ```{r}
 
+q3_df <- clean_df %>% 
+  mutate(sex_binary = ifelse(SEX =="Female", 1, 0)) %>% 
+  mutate(married = ifelse(MARST == "Married, spouse present", 1, 0)) %>% 
+  mutate(Employed = ifelse(WKSTAT %in% c("Full-time hours (35+), usually full-time", 
+                                         "Full-time hours (35+), usually part-time for economic reasons",
+                                         "Full-time hours (35+), usually part-time for non-economic reasons"),
+                           1, 0)) %>% 
+  mutate(all_covid = ifelse(monthyear >= '2020-03-01', 1, 0)) %>% 
+  dplyr::select(c(WKSTAT, Employed, IncNumber,YEAR, MONTH, race_dummy, student_dummy, AGE, sex_binary, 
+                  married, NCHILD,covid1_dummy, covid2_dummy, covid3_dummy, REGION, all_covid))
+
 ```
+
+
+```{r}
+
+q3m1 <- feols(Employed ~ race_dummy + student_dummy + AGE + sex_binary + covid1_dummy + covid2_dummy + covid3_dummy,
+              data=q3_df)
+etable(q3m1)
+
+
+```
+As we can see, being white, male, non-student, and younger tends to improve the chances of being employed. We can also see that each wave of covid decreased employment rates. 
+
+```{r}
+
+wald(q3m1, 'race_dummy')
+wald(q3m1, 'student_dummy')
+wald(q3m1, 'AGE')
+wald(q3m1, 'sex_binary')
+wald(q3m1, 'covid1_dummy')
+wald(q3m1, 'covid2_dummy')
+wald(q3m1, 'covid3_dummy')
+
+
+```
+Each control in the model has a significant impact.
+
+```{r}
+
+q3m2 <- feols(IncNumber ~ race_dummy + student_dummy + AGE + sex_binary + covid1_dummy + covid2_dummy + covid3_dummy,
+              data=q3_df)
+etable(q3m2)
+
+
+```
+When using the same controls but looking at income instead of employment we can see similar trends, white, male, and younger people tend to improve income. However being a student and age have very small impacts at this level. Something to note is that the covid wave variables included in the model have a positive coefficient, that is believe to be because as people were laid off, those earning more money remained employed and are becoming a larger portion of the data set as those not in the labor force tended to not report an income which is then dropped from the model. 
+
+
+```{r}
+
+
+wald(q3m2, 'race_dummy')
+wald(q3m2, 'student_dummy')
+wald(q3m2, 'AGE')
+wald(q3m2, 'sex_binary')
+wald(q3m2, 'covid1_dummy')
+wald(q3m2, 'covid2_dummy')
+wald(q3m2, 'covid3_dummy')
+
+```
+
 
 3 Carefully interpreting the results
 
@@ -277,6 +343,7 @@ Methodology and Interpretation Question 3:
 
 ### Assumptions and reasoning Question 3:
 
+We assume that income increases during the covid waves because as people are lost from the labor force they stopped reporting their income for the most part. That would lead to missing values in the dataset which are then dropped from the model which would skew the data into higher income as we see if lower earners were more likely to have lost their jobs. 
 
 
 5 Acknowledging the assumptions you are making in each analysis, how plausible those assumptions are in the context of your data, and any evidence you can provide backing up those assumptions

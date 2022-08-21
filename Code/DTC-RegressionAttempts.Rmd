@@ -263,7 +263,7 @@ ques2 %>% ggplot() +
 
 Data for this Question:
 ```{r}
-q3_df <- final_df %>% 
+q3_df <- clean_df %>% 
   mutate(sex_binary = ifelse(SEX =="Female", 1, 0)) %>% 
   mutate(married = ifelse(MARST == "Married, spouse present", 1, 0)) %>% 
   mutate(Employed = ifelse(WKSTAT %in% c("Full-time hours (35+), usually full-time", 
