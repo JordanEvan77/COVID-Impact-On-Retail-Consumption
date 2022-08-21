@@ -138,7 +138,7 @@ ques2$covid_april <- ifelse(ques2$monthyear >= '2020-04-01', 1, 0) # the 1 is la
 ```
 
 
-### First model verifying controls:
+#### First model verifying controls:
 unemper is our dependent model, which I took both seeking full time and seeking part time responses. It is possible that I could have included responses for people that had gone from full time down to part time, but I felt that full unemployment measures would better describe the health of retail compared to other industries.
 ```{r}
 ques2m1 <- feols(unemper ~ retail_or_not + YEAR + MONTH | REGION + covid1_dummy + covid2_dummy + covid3_dummy, 
@@ -167,7 +167,7 @@ The Wald Tests show that Year and Month are both jointly significant, which make
 
 
 
-### Second Model Logit:
+#### Second Model Logit:
 For the second model, a Logit with Binary Dependent Variable, the controls are relatively the same as the first model. I was able to still include the weights argument, and get an output on Marginal Fixed Effects. This model enables us to interpret the impact of retail employment on being unemployed through probability.
 ```{r}
 ques2logit <- feglm(unemper ~ retail_or_not + YEAR + MONTH | REGION + covid1_dummy + covid2_dummy + covid3_dummy, 
@@ -181,7 +181,7 @@ summary(log_m)
 From the Marginal Effect we see that the impact is fairly low, and has little to no significance. Upon observing this, reflecting on our real question brings in a time parameter. We are controlling for time currently, but it is relevant to think of utilizing fixed effects across a lot of our demographic variables, which leave a lot of open back doors. Additionally, observing our changes over time would be best to do with a dummy variable. I want to see what the impact of covid was on retail employment compared to other industries, so isolating that time in our model is crucial. 
 
 
-### Final Model Logit with Interaction Term:
+#### Final Model Logit with Interaction Term:
 For the final Model I added in the extra set of controls (Age, Sex, Race) as fixed effects. These are all spanning categories for our variable of interest (unemployment for retail), so controlling for them should help to close back doors. Since I am not concerned about their coefficient power or impact on the model, no WALD test will be used to verify the power of impact. 
 Additionally, I create another dummy variable for April, to see what the interaction is between being before and after April is on Retail employment compared to other industries. Of course the weights from the data are also still present in this final model. 
 ```{r}
@@ -194,12 +194,16 @@ ques2logit2 <- feglm(unemper ~ retail_or_not*covid_april + YEAR + MONTH + covid1
 
 ```
 
+
 Using Predictions formatting to gather probabilities of our scenarios:
 ```{r}
 #pred <- predictions(ques2logit2, variables = list(retail_or_not=c(0,1), covid_april=c(1,0)))
-summary(predictions(ques2logit2, newdata = datagrid(retail_or_not= 1, covid_april = 1)))
-summary(predictions(ques2logit2, newdata = datagrid(retail_or_not= 1, covid_april = 0)))
+sum1 <- summary(predictions(ques2logit2, newdata = datagrid(retail_or_not= 1, covid_april = 1)))
+kable(x=sum1, format = "html", caption = "During Covid Retail Unemployment")
+sum2 <- summary(predictions(ques2logit2, newdata = datagrid(retail_or_not= 1, covid_april = 0)))
+kable(x=sum2, format = "html", caption = "Before Covid Retail Unemployment")
 ```
+
 Interpretation: 
 These are overall probabilities. For the first scenario, if everyone was a retail worker after April 1st, we would anticipate an unemployment rate of 4.85%
 Second Scenario indicates that for retail workers before the pandemic the risk of unemployment was 2.3%, meaning if we only had 1000 retail workers pre pandemic, we would expect 23 of them to be unemployed.
@@ -207,10 +211,13 @@ Second Scenario indicates that for retail workers before the pandemic the risk o
 So there is certainly an increased risk of unemployment overtime for retail workers. 
 
 ```{r}
-summary(predictions(ques2logit2, newdata = datagrid(retail_or_not= 0, covid_april = 0)))
-summary(predictions(ques2logit2, newdata = datagrid(retail_or_not= 0, covid_april = 1)))
-
+sum3 <- summary(predictions(ques2logit2, newdata = datagrid(retail_or_not= 0, covid_april = 0)))
+kable(x=sum3, format = "html", caption = "Before Covid Non-Retail Unemployment")
+sum4 <- summary(predictions(ques2logit2, newdata = datagrid(retail_or_not= 0, covid_april = 1)))
+kable(x=sum4, format = "html", caption = "During Covid Non-Retail Unemployment")
 ```
+
+Interpretation:
 These are also general probabilities.
 First Scenario, if no one was a retail employee, before April of 2020 we would anticipate having an unemployment rate of 1.42%.
 Second summary shows that non retail workers post April 1st would anticipate an unemployment rate of 3.09%, which is lower than for retail workers, however we do see an increased growth of risk for unemployment in both retail and non retail. 
@@ -231,7 +238,8 @@ ques2 <- ques2 %>% mutate(logit_index2 = predict(ques2logit2, type="link", newda
 
 
 ques2 %>% ggplot() +
-  geom_line(aes(x=logit_index2, y=logit_predict2)) + geom_smooth(aes(x=logit_index2, y=unemper))
+  geom_line(aes(x=logit_index2, y=logit_predict2)) + geom_smooth(aes(x=logit_index2, y=unemper)) +
+  labs(x = "Logit Index", y = "Logit Prediction", title = "Overlap Accuracy of Model Predictions")
 ```
 The curve and predicted values are relatively overlapping and correct over the index, which shows that our model is relatively healthy. 
 
