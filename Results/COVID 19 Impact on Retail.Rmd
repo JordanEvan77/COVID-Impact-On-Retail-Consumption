@@ -9,7 +9,6 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Libraries:
 
 ```{r, include = FALSE}
 library(fixest)
@@ -30,16 +29,17 @@ library(kableExtra)
 ```
 
 ## Data Used:
+This Data set is pulled from the IPUMS data base, and tracks demographic, employment and income information from 2019 to present. 
+We utilized the Current Population Survey from Ipums to gather this information (Cited: Sarah Flood, Miriam King, Renae Rodgers, Steven Ruggles and J. Robert Warren. Integrated Public Use Microdata Series, Current Population Survey: Version 7.0 [dataset]. Minneapolis, MN: IPUMS, 2020. https://doi.org/10.18128/D030.V7.0)
+
+
 ```{r}
 clean_df<- read_csv('../RawData/final_clean.csv')
 
 ```
 
-Format the writeup as a report with sections for the main questions, not a list of bullet points. Information to include:
 
-1 Why you are running the analyses you are running
-
-## Exploratory Data Analysis:
+## Exploratory Data Analysis: Why we are running our specific analysis:
 
 
 ### EDA for Question 1:
@@ -194,7 +194,7 @@ ques2logit2 <- feglm(unemper ~ retail_or_not*covid_april + YEAR + MONTH + covid1
 
 ```
 
-Normal Marginal Effects:
+Using Predictions formatting to gather probabilities of our scenarios:
 ```{r}
 #pred <- predictions(ques2logit2, variables = list(retail_or_not=c(0,1), covid_april=c(1,0)))
 summary(predictions(ques2logit2, newdata = datagrid(retail_or_not= 1, covid_april = 1)))
