@@ -28,9 +28,9 @@ library(DAMisc)
 library(kableExtra)
 ```
 
-## Data Used:
+## Description of Data Set:
 This Data set is pulled from the IPUMS data base, and tracks demographic, employment and income information from 2019 to present. 
-We utilized the Current Population Survey from Ipums to gather this information (Cited: Sarah Flood, Miriam King, Renae Rodgers, Steven Ruggles and J. Robert Warren. Integrated Public Use Microdata Series, Current Population Survey: Version 7.0 [dataset]. Minneapolis, MN: IPUMS, 2020. https://doi.org/10.18128/D030.V7.0)
+We utilized the Current Population Survey from IPUMS to gather this information (Cited: Sarah Flood, Miriam King, Renae Rodgers, Steven Ruggles and J. Robert Warren. Integrated Public Use Microdata Series, Current Population Survey: Version 7.0 [dataset]. Minneapolis, MN: IPUMS, 2020. https://doi.org/10.18128/D030.V7.0)
 
 
 ```{r}
@@ -38,16 +38,16 @@ clean_df<- read_csv('../RawData/final_clean.csv')
 
 ```
 
-
+-------------------------------------------------------------------------------------------------------------
 ## Exploratory Data Analysis: Why we are running our specific analysis:
+Upon downloading our dataset from IPUMS and formatting it, our team conducted some data exploration to take a look at what insights and general assumptions we could derive from our data.
 
 
 ### EDA for Question 1:
-```{r}
-#2 visuals
-
-
-```
+Our team examined the observations for retail vs non-retail as shown in the below histogram. Obviously the number of observations in non-retail is larger than those in retail, but we can clearly see a significant amount of the observations are in retail.
+![](../Plots/RetailTradeHist.jpeg){width=625px}
+We also examined how unemployment changed over time for those in retail and those not in retail. We observe that both retail and non-retail generally follow the same trend line:
+![](../Plots/unemp_retail_or_not_time.jpeg){width=625px}
 
 
 ### EDA for Question 2:
@@ -73,12 +73,16 @@ In trying to establish how income has changed since covid began impacting the ec
 
 
 When it comes to the age breakdown of who is employed it seems that even through the dip in average employment rate for all groups the same trends appear in that traditional working ages between 20-60 are mostly employed. 
+These charts all demonstrate our inital exploration of our data set. From here, we began our analysis to answer the three research questions.
+
+------------------------------------------------------------------------------------------------------------
+# REMOVE THIS SECTION BEFORE SUBMITTING - this is from the Prof
+2. How the analyses answer the question being asked, and what the result is: 
+3. Carefully interpreting the results: 
+4. Presenting the results in an appealing way. Graphs are great, sumtable() is great, export_summs() is great - put a little effort into formatting tables and figures to make them look nice! At the very least, variable names should be in English rather than statistics-package (‘Education’ not ‘EDUC’). If you aren’t comfortable enough with ggplot to make its visualizations look nice, feel free to make graphics in Excel or Tableau or anything you like, and include them in your RMarkdown doc as images. Econometric analyses should be in R.
 
 
-
-2 How the analyses answer the question being asked, and what the result is: 3 Carefully interpreting the results: 4 Presenting the results in an appealing way. Graphs are great, sumtable() is great, export_summs() is great - put a little effort into formatting tables and figures to make them look nice! At the very least, variable names should be in English rather than statistics-package (‘Education’ not ‘EDUC’). If you aren’t comfortable enough with ggplot to make its visualizations look nice, feel free to make graphics in Excel or Tableau or anything you like, and include them in your RMarkdown doc as images. Econometric analyses should be in R.
-
-
+-------------------------------------------------------------------------------------------------------------
 ## Models and Analysis:
 
 ### Methodology and Interpretation Question 1:
@@ -152,7 +156,7 @@ kable(x = summ_before_covid,
       format = "html", 
       caption = "Before Covid Retail Unemployment")
 ```
-Based on this regression and analysis, we see that pre-COVID (before April 1st, 2020), we would anticipate an unemployment rate of 3.7%, and post-COVID, we anticipate an unemployment rate of 11.29% which is a massive spike. This aligns much more closely to what we saw in our exploratory data analysis chart.
+*Based on this regression and analysis, we see that pre-COVID (before April 1st, 2020), we would anticipate an unemployment rate of 3.7%, and post-COVID, we anticipate an unemployment rate of 11.29% which is a massive spike. This aligns much more closely to what we saw in our exploratory data analysis charts.*
 
 
 Lastly, our team ran a plot to see how well our LOGIT model predicts unemployment:
@@ -187,9 +191,14 @@ q1_logit_plot
 ```
 We observe that the LOGIT model performs quite well.
 
-
 ### Assumptions and reasoning Question 1:
-To answer this question, our team relied on examining observations that were solely within the retail industry (filtering out any non-retail industry observations). 
+To answer this question, our team relied on examining observations that were solely within the retail industry (filtering out any non-retail industry observations). Because we are examining retail compared to other industries in question 2, we felt that filtering to only retail observations for our first question was appropriate.
+
+We also assumed that April 1st, 2020 was the 'cutoff' point marking the beginning of COVID. We chose this cutoff point as the month of March could go either way as counting 'pre' or 'post' COVID, so we chose a more conservative approach and marked the beginning of COVID as April 1.
+
+Another assumption we made was that a LOGIT model was most appropriate to answer this first question. Although we did explore multiple linear regressions, we ultimately felt that a LOGIT model was best to answer the question. In using this model, we recognize there is inherent risk to the accuracy of the model, particularly on the tail ends of the model, and we also recognize the incidental parameter issue with the impact of multiple fixed effect controls leadings to a less marginally effective model.
+
+With our first question answered, we now move on to question two.
 
 
 ### Methodology and Interpretation Question 2:
@@ -429,6 +438,8 @@ For Question 1....
 
 
 
+
+For Question 2....
 In regards to Question 2, "How has retail fared relative to other industries?"  We see that there is a significant probability difference in being unemployed during the pandemic if you are in retail. During covid in retail compared to non retail workers the likely hood of being unemployed was 4.85% compared to 3.09%. This means that being in retail increased your chances of becoming unemployed, and as a whole, the industry suffered more than other industries on average when it came to unemployment. However there is a relationship between transitioning into covid and all industries suffering more job loss on average.
 
 To further research this question, it would be very helpful to gather more data on the different types of retail workers, at an even larger scale, and see who from stores, malls, food centers and other retail services suffered the most at large scale. Our sample here doesn't quite capture the millions of retail-like workers that must have gone without a paycheck at some point in time. It would also be very interesting to see if and how these individuals re-entered the work place following the de-escalation of covid. 
@@ -436,7 +447,6 @@ To further research this question, it would be very helpful to gather more data 
 
 
 For Question 3...
-
 Retail needs to worry about who has money to spend - what has changed about who is working and earning money?
 
 The trends we saw before the first covid spikes at the end of the first quarter 2020 in regards to the workforce and income distribution still exist now that things are returning to normal in regards to the pandemic. The people who are employed and have money tend to be younger, white, and female. There were changes in every group as each wave of covid began and the recovery for everyone has been different but overall not much has changed in who has money. 
