@@ -162,7 +162,7 @@ kable(x = summ_before_covid,
 ```
 
 
-**Based on this regression and analysis, we see that pre-COVID (before April 1st, 2020), we would anticipate an unemployment rate of 3.78%, and post-COVID, we anticipate an unemployment rate of 11.29% which is a massive spike. This aligns much more closely to what we saw in our exploratory data analysis charts.**
+**Based on this regression and analysis, we see that pre-COVID (before April 1st, 2020), we would anticipate an unemployment rate of 3.69%, and post-COVID, we anticipate an unemployment rate of 11.54% which is a massive spike. This aligns much more closely to what we saw in our exploratory data analysis charts.**
 
 
 Lastly, our team ran a plot to see how well our LOGIT model predicts unemployment:
