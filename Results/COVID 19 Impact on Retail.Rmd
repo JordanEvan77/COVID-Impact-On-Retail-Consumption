@@ -434,9 +434,11 @@ I do not expect indisputable flawless results - the data can only do so much, an
 
 
 ## Results and Further Research:
-For Question 1....
+For Question 1: How has COVID affected the health of the retail industry, as measured by employment?
 
+Question one is interesting because it solely focuses on the retail industry. As we found, there is a significant impact COVID had on the retail industry wherein pre-COVID (before April 1st, 2020), we anticipate an unemployment rate of 3.7%, and post-COVID, we anticipate an unemployment rate of 11.29% holding all else equal.
 
+For further research, it would be interesting to see how COVID has affected other specific industries, such as restaurants or 'service' dependent industries. Ultimately, those findings could help inform policy decision makers. In addition to looking at other industries, it would be interesting to rerun our results with more data stretching back further in time. It would also be interesting to see if other diseases yield similar results - or what the difference is between the impact of COVID vs a different virus on the retail industry.
 
 
 For Question 2....
