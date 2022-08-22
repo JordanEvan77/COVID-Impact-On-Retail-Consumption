@@ -102,6 +102,8 @@ q1_df <- clean_df %>%
   mutate(Covid_April = ifelse(monthyear >= '2020-04-01', 1, 0)) %>%
   filter(RetailIndustry == 1) # filter to only the retail industry
 ```
+
+
 ### Question 1, Model 1:
 Employed ~ YEAR + MONTH + REGION + covid1_dummy + covid2_dummy + covid3_dummy
 ```{r}
@@ -119,6 +121,7 @@ Question 1, Model 1 Analysis:
 Although we observe statistically significant results for our variables (albeit at varying levels of significance), this model does not help us fully identify how COVID has impacted the retail industry. Our residual plotting chart shows that a LOGIT model may work better as we are using Unemployed (our binary dependent variable) as the ultimate variable of interest. Based on this analysis, we wanted to introduce an interaction term for question one in order to identify the impact of COVID after April 1, 2020, the date that we assume COVID would have the biggest impact on Unemployment which is shown in our next model.
 
 
+
 ### Question 1, Model 2:
 ```{r}
 q1_m2 <- feols(Unemployed ~ YEAR*Covid_April + YEAR + MONTH + REGION + covid1_dummy + covid2_dummy + covid3_dummy,
@@ -129,6 +132,7 @@ etable(q1_m2)
 ```
 Question 1, Model 2 Analysis:
 Introducing an interaction term in this regression gave us surprising results - we see the interaction term coefficient of -0.224 is statistically significant, but leads us to believe that after April 1, 2020, COVID led to a decrease in unemployment, however, this result is not fully satisfying because we saw in our exploratory data analysis that unemployment spiked during this time frame. To further investigate, we ran a third model using LOGIT.
+
 
 
 ### Question 1, Model 3:
@@ -156,7 +160,8 @@ kable(x = summ_before_covid,
       format = "html", 
       caption = "Before Covid Retail Unemployment")
 ```
-**Based on this regression and analysis, we see that pre-COVID (before April 1st, 2020), we would anticipate an unemployment rate of 3.7%, and post-COVID, we anticipate an unemployment rate of 11.29% which is a massive spike. This aligns much more closely to what we saw in our exploratory data analysis charts.**
+
+**Based on this regression and analysis, we see that pre-COVID (before April 1st, 2020), we would anticipate an unemployment rate of 3.78%, and post-COVID, we anticipate an unemployment rate of 11.29% which is a massive spike. This aligns much more closely to what we saw in our exploratory data analysis charts.**
 
 
 Lastly, our team ran a plot to see how well our LOGIT model predicts unemployment:
