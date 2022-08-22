@@ -1,6 +1,6 @@
 ---
 title: "Exploratory Data Analysis"
-author: "Jordan Gropper"
+author: "Brooke Cummins, Andy Turner, Sean Bellevue and Jordan Gropper"
 date: '2022-07-16'
 output: html_document
 ---
@@ -179,54 +179,11 @@ ggplot(covun_inc %>% filter(COVIDUNAW == 'Yes'), aes(x = IncNumber, y = proporti
 ```
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 Andy:
 ```{r}
 #"STATEFIP" "CPSIDP" "CITIZEN" "WHYUNEMP" "COVIDLOOK" "RACE"  "PERNUM"
 andy_data <- first_data %>% 
-  dplyr:: select(STATEFIP, CPSIDP, CITIZEN, WHYUNEMP, COVIDLOOK, RACE, PERNUM, YEAR, MONTH, monthyear)
+  dplyr:: select(STATEFIP, CPSIDP, CITIZEN, WHYUNEMP, COVIDLOOK, RACE, IND, INDNAME, PERNUM, YEAR, MONTH, monthyear)
 
 andy_data <- andy_data %>%
   mutate(Count = 1)
@@ -262,6 +219,25 @@ andy_data %>% ggplot(mapping = aes(STATEFIP)) +
   
 ```
 
+```{r}
+#------------------
+# Histogram for IND
+RetailTradeHist <- andy_data %>%
+  mutate(RetailOrNot = ifelse(INDNAME %in% c('Retail Trade'), "Retail Trade","Other Industry")) %>%
+  ggplot(mapping = aes(RetailOrNot)) + 
+  geom_histogram(stat = 'count',  fill="cadetblue") +
+  labs(x = 'Industry Name',
+       y = 'Count of Individuals',
+       title = 'Respondent Count by Industry Name') +
+  theme(axis.text.x = element_text(angle = -45),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(color = )) +
+  coord_flip()
+
+RetailTradeHist
+```
 
 
 
@@ -359,6 +335,32 @@ ggsave(filename = "../Plots/Whyunemp.png", plot = whyunemp_chart)
 ```
 
 
+Changes over time:
+```{r}
+whyunemp_retail <- andy_data %>%
+  mutate(RetailOrNot = ifelse(INDNAME %in% c('Retail Trade'), 
+                              "Retail Trade","Other Industry")) %>%
+  group_by(WHYUNEMP, monthyear, RetailOrNot) %>%
+  summarize(Count = sum(Count)) %>%
+  filter(WHYUNEMP != 'NIU')
+  
+whyunemp_retail_chart <- whyunemp_retail%>%
+  ggplot(mapping = aes(x = monthyear, y = Count, color = as.factor(RetailOrNot))) +
+  geom_line() +
+  labs(x = 'Reason Why Unemployed',
+       y = 'Aggregated Count',
+       title = 'Unemployment Reason Changes for Retail and Non-Retail Over Time',
+       subtitle = 'Excludes NIU (no response)') +
+  theme(legend.position = 'bottom',
+        axis.text.x = element_text(angle = -45),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(color = ))
+
+whyunemp_retail_chart # view plot
+```
+
 COVIDLOOK ------------------------------------------------------------------------------
 Class: numeric (binary)
 Description: asks if respondents were prevented from looking for work due to covid
@@ -455,74 +457,6 @@ DON'T NEED to control for in regression.
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 Brooke:
 ```{r}
 
@@ -577,63 +511,6 @@ brooke_data %>% ggplot(mapping = aes(MARST)) +
 #"METAREA" "AGE" "NATIVITY" "WKSTAT" "INDNAME" "EMPSTAT" "MARST"
 
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -813,29 +690,6 @@ timer_full
 ```{r}
 ggsave(filename = "../Plots/fulltime_retail.png", plot = timer_full)
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
