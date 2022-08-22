@@ -86,7 +86,7 @@ These charts all demonstrate our inital exploration of our data set. From here, 
 
 ### Methodology and Interpretation Question 1:
 The first question of interest in this project is: How has COVID affected the health of the retail industry, as measured by employment? To help answer this question, our team ran several regression models, controlling for items like COVID changes over time, region, and focusing solely on observations in the retail industry. We also wanted to utilize the weights of the observations in order to control for back doors in our models. The following code chunk creates the intial dataframe to answer question 1:
-```{r}
+```{r Q1 DF}
 # select cols
 # mutate to get binary if full time work status
 # mutate to get binary if job loser
@@ -105,7 +105,7 @@ q1_df <- clean_df %>%
 
 ### Question 1, Model 1:
 Employed ~ YEAR + MONTH + REGION + covid1_dummy + covid2_dummy + covid3_dummy
-```{r}
+```{r Q1 Model 1}
 q1_m1 <- feols(Unemployed ~ YEAR + MONTH + covid1_dummy + covid2_dummy + covid3_dummy,
                data = q1_df,
                weights = q1_df$WTFINL,
@@ -122,7 +122,7 @@ Although we observe statistically significant results for our variables (albeit 
 
 
 ### Question 1, Model 2:
-```{r}
+```{r Q1 Model 2}
 q1_m2 <- feols(Unemployed ~ YEAR*Covid_April + YEAR + MONTH + REGION + covid1_dummy + covid2_dummy + covid3_dummy,
                data = q1_df,
                weights = q1_df$WTFINL,
@@ -135,7 +135,7 @@ Introducing an interaction term in this regression gave us surprising results - 
 
 
 ### Question 1, Model 3:
-```{r}
+```{r Q1 Model 3}
 q1_m3 <- feglm(Unemployed ~ YEAR*Covid_April + YEAR + MONTH |
                  REGION + covid1_dummy + covid2_dummy + covid3_dummy,
                data = q1_df,
@@ -166,7 +166,7 @@ kable(x = summ_before_covid,
 
 Lastly, our team ran a plot to see how well our LOGIT model predicts unemployment:
 Q1_m3 Logit Model Plot:
-```{r}
+```{r Q1 Logit Plot}
 # mutate original q1 dataframe to include prediciton and index
 q1_df <- q1_df %>% 
   mutate(logit_predict = predict(q1_m3,
@@ -211,7 +211,7 @@ With our first question answered, we now move on to question two.
 ### Methodology and Interpretation Question 2:
 
 The official question is "How has retail fared relative to other industries?", which I interpretted in the direction of employment status. The data set I focused on had items that we felt would be worth controlling for, like region and the year and month, along with the individual waves of covid, which would certainly be an endogenous variable that would impact if people were able to get any variety of employment. I also wanted to control for Age, Sex and Race in my final model. Additionally, since this is survey data, utilizing the weights is crucial to make sure that we don't introduce any extra back doors. 
-```{r}
+```{r Q2 Data Frame}
 #Dummies and Controls
 ques2 <- clean_df %>% dplyr::select(YEAR, MONTH, monthyear, CPSID, WTFINL, AGE, SEX, RACE, CLASSWKR, WHYUNEMP, WKSTAT, INDNAME, covid1_dummy, covid2_dummy, covid3_dummy, REGION) 
 
@@ -227,7 +227,7 @@ ques2$covid_april <- ifelse(ques2$monthyear >= '2020-04-01', 1, 0) # the 1 is la
 
 #### First model verifying controls:
 unemper is our dependent model, which I took both seeking full time and seeking part time responses. It is possible that I could have included responses for people that had gone from full time down to part time, but I felt that full unemployment measures would better describe the health of retail compared to other industries.
-```{r}
+```{r Q2 Model 1}
 ques2m1 <- feols(unemper ~ retail_or_not + YEAR + MONTH | REGION + covid1_dummy + covid2_dummy + covid3_dummy, 
                  data = ques2, weights = ques2$WTFINL, vcov='hetero')
 
@@ -244,7 +244,7 @@ plot(fitted(ques2m1), resid_1)
 Observing the impact of retail_or_not, a dummy variable, it is apparent that there is a minor yet significant impact from being in retail compared to other industries, and how that relates to becoming unemployed. The residuals plot shows us that this multivariate model doesn't fit well with a dependent variable that is binary. Due to the heteroskedasticity we see it makes sense to try a logit model next to see how that performs. With our current Fixed Effects, it also becomes important to verify that they are all useful, so we proceed to do some WALD tests.
 
 
-```{r}
+```{r Q2 M1 Wald}
 wald(ques2m1, c("YEAR", "MONTH")) #both are useful
 wald(ques2m1, c("REGION")) # All regions are significant
 wald(ques2m1, c("covid1_dummy", "covid2_dummy", "covid3_dummy")) # all are significant and useful
@@ -256,7 +256,7 @@ The Wald Tests show that Year and Month are both jointly significant, which make
 
 #### Second Model Logit:
 For the second model, a Logit with Binary Dependent Variable, the controls are relatively the same as the first model. I was able to still include the weights argument, and get an output on Marginal Fixed Effects. This model enables us to interpret the impact of retail employment on being unemployed through probability.
-```{r}
+```{r Q2 Model 2}
 ques2logit <- feglm(unemper ~ retail_or_not + YEAR + MONTH | REGION + covid1_dummy + covid2_dummy + covid3_dummy, 
                  data = ques2, weights = ques2$WTFINL, family = binomial(link = 'logit')) # 
 
@@ -272,7 +272,7 @@ From the Marginal Effect we see that the impact is fairly low, and has little to
 #### Final Model Logit with Interaction Term:
 For the final Model I added in the extra set of controls (Age, Sex, Race) as fixed effects. These are all spanning categories for our variable of interest (unemployment for retail), so controlling for them should help to close back doors. Since I am not concerned about their coefficient power or impact on the model, no WALD test will be used to verify the power of impact. 
 Additionally, I create another dummy variable for April, to see what the interaction is between being before and after April is on Retail employment compared to other industries. Of course the weights from the data are also still present in this final model. 
-```{r}
+```{r Q2 Final Model}
 # Creating a dummy variable to see before and during covid. I will keep the assumption that March was the first wave of covid, but 
 #the layoffs would have initiated after covid had lingered, so I am marking in April:
 
@@ -284,7 +284,7 @@ ques2logit2 <- feglm(unemper ~ retail_or_not*covid_april + YEAR + MONTH + covid1
 
 
 Using Predictions formatting to gather probabilities of our scenarios:
-```{r}
+```{r Q2 Predictions}
 #pred <- predictions(ques2logit2, variables = list(retail_or_not=c(0,1), covid_april=c(1,0)))
 sum1 <- summary(predictions(ques2logit2, newdata = datagrid(retail_or_not= 1, covid_april = 1)))
 kable(x=sum1, format = "html", caption = "During Covid Retail Unemployment")
@@ -306,7 +306,7 @@ So there is certainly an increased risk of unemployment overtime for retail work
 
 
 
-```{r}
+```{r Q2 Kable Summaries}
 sum3 <- summary(predictions(ques2logit2, newdata = datagrid(retail_or_not= 0, covid_april = 0)))
 kable(x=sum3, format = "html", caption = "Before Covid Non-Retail Unemployment")
 sum4 <- summary(predictions(ques2logit2, newdata = datagrid(retail_or_not= 0, covid_april = 1)))
@@ -321,7 +321,7 @@ These are also general probabilities.
 First Scenario, if no one was a retail employee, before April of 2020 we would anticipate having an unemployment rate of 1.42%.
 Second summary shows that non retail workers post April 1st would anticipate an unemployment rate of 3.09%, which is lower than for retail workers, however we do see an increased growth of risk for unemployment in both retail and non retail. 
 
-```{r}
+```{r Q2 Avg Unempr}
 avg_unemper
 ```
 We see that retail in general has a post covid higher than average rate of unemployment from 3.22% to 4.85%
@@ -330,7 +330,7 @@ In our interaction term we see that if the time is in April 2020 or later that t
 
 
 Here is a visual which portrays the accuracy of the final logit model. 
-```{r}
+```{r Q2 Logit Plot}
 ques2 <- ques2 %>% mutate(logit_predict2 = predict(ques2logit2, type="response", newdata=ques2))
 ques2 <- ques2 %>% mutate(logit_index2 = predict(ques2logit2, type="link", newdata=ques2))
 
@@ -359,7 +359,7 @@ The objective for question three is to determine what groups of people are emplo
 
 First we look at basic demographics such as age, gender, student status, and race to determine how much each category contributes to employment status between each of the covid waves. 
 
-```{r}
+```{r Q3 Data Frame}
 
 q3_df <- clean_df %>% 
   mutate(sex_binary = ifelse(SEX =="Female", 1, 0)) %>% 
@@ -375,7 +375,7 @@ q3_df <- clean_df %>%
 ```
 
 
-```{r}
+```{r Q3 Model 1}
 
 q3m1 <- feols(Employed ~ race_dummy + student_dummy + AGE + sex_binary + covid1_dummy + covid2_dummy + covid3_dummy,
               data=q3_df)
@@ -385,7 +385,7 @@ etable(q3m1)
 ```
 As we can see, being white, male, non-student, and younger tends to improve the chances of being employed. We can also see that each wave of covid decreased employment rates. 
 
-```{r}
+```{r Q3 M1 Wald}
 
 wald(q3m1, 'race_dummy')
 wald(q3m1, 'student_dummy')
@@ -399,7 +399,7 @@ wald(q3m1, 'covid3_dummy')
 ```
 Each control in the model has a significant impact.
 
-```{r}
+```{r Q3 Model 2}
 
 q3m2 <- feols(IncNumber ~ race_dummy + student_dummy + AGE + sex_binary + covid1_dummy + covid2_dummy + covid3_dummy,
               data=q3_df)
@@ -410,7 +410,7 @@ etable(q3m2)
 When using the same controls but looking at income instead of employment we can see similar trends, white, male, and younger people tend to improve income. However being a student and age have very small impacts at this level. Something to note is that the covid wave variables included in the model have a positive coefficient, that is believe to be because as people were laid off, those earning more money remained employed and are becoming a larger portion of the data set as those not in the labor force tended to not report an income which is then dropped from the model. 
 
 
-```{r}
+```{r Q3 M2 Wald}
 
 
 wald(q3m2, 'race_dummy')
