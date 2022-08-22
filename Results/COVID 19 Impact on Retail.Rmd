@@ -38,7 +38,6 @@ clean_df<- read_csv('../RawData/final_clean.csv')
 
 ```
 
--------------------------------------------------------------------------------------------------------------
 ## Exploratory Data Analysis: Why we are running our specific analysis:
 Upon downloading our dataset from IPUMS and formatting it, our team conducted some data exploration to take a look at what insights and general assumptions we could derive from our data.
 
@@ -161,6 +160,7 @@ kable(x = summ_before_covid,
       caption = "Before Covid Retail Unemployment")
 ```
 
+
 **Based on this regression and analysis, we see that pre-COVID (before April 1st, 2020), we would anticipate an unemployment rate of 3.78%, and post-COVID, we anticipate an unemployment rate of 11.29% which is a massive spike. This aligns much more closely to what we saw in our exploratory data analysis charts.**
 
 
@@ -194,6 +194,7 @@ q1_logit_plot <- q1_df %>%
 
 q1_logit_plot
 ```
+
 We observe that the LOGIT model performs quite well.
 
 ### Assumptions and reasoning Question 1:
@@ -204,6 +205,7 @@ We also assumed that April 1st, 2020 was the 'cutoff' point marking the beginnin
 Another assumption we made was that a LOGIT model was most appropriate to answer this first question. Although we did explore multiple linear regressions, we ultimately felt that a LOGIT model was best to answer the question. In using this model, we recognize there is inherent risk to the accuracy of the model, particularly on the tail ends of the model, and we also recognize the incidental parameter issue with the impact of multiple fixed effect controls leadings to a less marginally effective model.
 
 With our first question answered, we now move on to question two.
+
 
 
 ### Methodology and Interpretation Question 2:
