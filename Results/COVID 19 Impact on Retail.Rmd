@@ -136,9 +136,10 @@ Introducing an interaction term in this regression gave us surprising results - 
 
 ### Question 1, Model 3:
 ```{r Q1 Model 3}
-q1_m3 <- feglm(Unemployed ~ YEAR*Covid_April + YEAR + MONTH |
+q1_m3 <- feglm(Unemployed ~ YEAR*Covid_April + YEAR + MONTH +
                  REGION + covid1_dummy + covid2_dummy + covid3_dummy,
                data = q1_df,
+               weights = q1_df$WTFINL,
                family = binomial(link = 'logit'))
 etable(q1_m3)
 log_q1_m3 <- marginaleffects(q1_m3)
