@@ -146,7 +146,7 @@ log_m3 <- summary(log_q1_m3)
 
 kable(x = log_m3, 
       format = "html", 
-      caption = "Low Marginal Effect of Retail or Not")
+      caption = "Marginal Effects Question 1 Model 3")
 
 # Using Predictions to gather probabilities of our scenarios:
 summ_during_covid <- summary(predictions(q1_m3, newdata = datagrid(Covid_April = 1)))
