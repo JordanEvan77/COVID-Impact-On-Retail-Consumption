@@ -28,6 +28,7 @@ library(DAMisc)
 library(kableExtra)
 ```
 
+
 ## Description of Data Set:
 This Data set is pulled from the IPUMS data base, and tracks demographic, employment and income information from 2019 to present. 
 We utilized the Current Population Survey from IPUMS to gather this information (Cited: Sarah Flood, Miriam King, Renae Rodgers, Steven Ruggles and J. Robert Warren. Integrated Public Use Microdata Series, Current Population Survey: Version 7.0 [dataset]. Minneapolis, MN: IPUMS, 2020. https://doi.org/10.18128/D030.V7.0)
