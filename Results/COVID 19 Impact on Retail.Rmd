@@ -1,6 +1,6 @@
 ---
 title: "COVID 19 Impact On Retail"
-author: "Jordan Gropper"
+author: "Brooke Cummins, Andy Turner, Sean Bellevue and Jordan Gropper"
 date: '2022-08-01'
 output: html_document
 ---
@@ -9,9 +9,8 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Libraries:
 
-```{r cars}
+```{r, include = FALSE}
 library(fixest)
 library(ggplot2)
 library(tidyverse)
@@ -24,94 +23,446 @@ library(corrplot)
 library(patchwork)
 library(haven)
 library(marginaleffects)
+library(effects)
+library(DAMisc)
+library(kableExtra)
 ```
 
-## Data Used:
+## Description of Data Set:
+This Data set is pulled from the IPUMS data base, and tracks demographic, employment and income information from 2019 to present. 
+We utilized the Current Population Survey from IPUMS to gather this information (Cited: Sarah Flood, Miriam King, Renae Rodgers, Steven Ruggles and J. Robert Warren. Integrated Public Use Microdata Series, Current Population Survey: Version 7.0 [dataset]. Minneapolis, MN: IPUMS, 2020. https://doi.org/10.18128/D030.V7.0)
+
+
 ```{r}
 clean_df<- read_csv('../RawData/final_clean.csv')
 
 ```
 
-Format the writeup as a report with sections for the main questions, not a list of bullet points. Information to include:
-
-1 Why you are running the analyses you are running
-
-## Exploratory Data Analysis Visuals:
-
-```{r}
+## Exploratory Data Analysis: Why we are running our specific analysis:
+Upon downloading our dataset from IPUMS and formatting it, our team conducted some data exploration to take a look at what insights and general assumptions we could derive from our data.
 
 
+### EDA for Question 1:
+Our team examined the observations for retail vs non-retail as shown in the below histogram. Obviously the number of observations in non-retail is larger than those in retail, but we can clearly see a significant amount of the observations are in retail.
+![](../Plots/RetailTradeHist.jpeg){width=625px}
+We also examined how unemployment changed over time for those in retail and those not in retail. We observe that both retail and non-retail generally follow the same trend line:
+![](../Plots/unemp_retail_or_not_time.jpeg){width=625px}
 
 
+### EDA for Question 2:
+
+The following 2 plots look at over all unemployment as well as industry comparisons for loss of full time jobs.
+
+![](../Plots/Whyunemp.png){width=625px}
+We see from the above visual that we have an understandable spike in jobs being lost at around the beginning of April, which is to be anticipated, as well as a rise in non-lay off job losses around June of 2020. This almost wave like pattern re-affirms our confidence in using dummies for the covid waves, as we can certainly see their impact here as well as on income.
+
+
+Upon closer observation, it also appears that retail_trade jobs (1) did suffer a dip, but proportionally it was not as severe as the other industries.This may be due to the fact that so little of our sample worked in retail to begin with. 
+
+![](../Plots/fulltime_retail.png){width=700px}
+
+
+### EDA for Question 3:
+![](../Plots/income_correlation.png){width=625px}
+
+
+In trying to establish how income has changed since covid began impacting the economy we can look at the correlation between income and other attributes within the data. Not surprisingly there is a strong positive tie between employment and income, and a negative correlation with the covid waves as well as student status. 
+
+![](../Plots/age_emp.png){width=500px}
+
+
+When it comes to the age breakdown of who is employed it seems that even through the dip in average employment rate for all groups the same trends appear in that traditional working ages between 20-60 are mostly employed. 
+These charts all demonstrate our inital exploration of our data set. From here, we began our analysis to answer the three research questions.
+
+------------------------------------------------------------------------------------------------------------
+# REMOVE THIS SECTION BEFORE SUBMITTING - this is from the Prof
+2. How the analyses answer the question being asked, and what the result is: 
+3. Carefully interpreting the results: 
+4. Presenting the results in an appealing way. Graphs are great, sumtable() is great, export_summs() is great - put a little effort into formatting tables and figures to make them look nice! At the very least, variable names should be in English rather than statistics-package (‘Education’ not ‘EDUC’). If you aren’t comfortable enough with ggplot to make its visualizations look nice, feel free to make graphics in Excel or Tableau or anything you like, and include them in your RMarkdown doc as images. Econometric analyses should be in R.
+
+
+-------------------------------------------------------------------------------------------------------------
+## Models and Analysis:
+
+### Methodology and Interpretation Question 1:
+The first question of interest in this project is: How has COVID affected the health of the retail industry, as measured by employment? To help answer this question, our team ran several regression models, controlling for items like COVID changes over time, region, and focusing solely on observations in the retail industry. We also wanted to utilize the weights of the observations in order to control for back doors in our models. The following code chunk creates the intial dataframe to answer question 1:
+```{r Q1 DF}
+# select cols
+# mutate to get binary if full time work status
+# mutate to get binary if job loser
+# mutate to get binary if retail or not
+q1_df <- clean_df %>%
+  dplyr::select(YEAR, MONTH, monthyear, CPSID, PERNUM, WTFINL, CLASSWKR, WHYUNEMP, WKSTAT,
+                REGION, INDNAME, covid1_dummy, covid2_dummy, covid3_dummy) %>%
+  mutate(Unemployed = ifelse(WKSTAT %in% c("Unemployed, seeking part-time work", "Unemployed, seeking full-time work"),
+                           1, 0)) %>%
+  mutate(JobLost = ifelse(WHYUNEMP %in% c("Job loser - on layoff", "Other job loser"), 1, 0)) %>%
+  mutate(RetailIndustry = ifelse(INDNAME %in% c("Retail Trade"), 1, 0)) %>%
+  mutate(Covid_April = ifelse(monthyear >= '2020-04-01', 1, 0)) %>%
+  filter(RetailIndustry == 1) # filter to only the retail industry
 ```
 
-### Question 2
-```{r}
-clean_df <- clean_df %>%
-  mutate(Count = 1)
 
-whyunemp_filtered <- clean_df %>%
-  group_by(WHYUNEMP, monthyear) %>%
-  summarize(Count = sum(Count)) %>%
-  filter(WHYUNEMP != 'NIU')
+### Question 1, Model 1:
+Employed ~ YEAR + MONTH + REGION + covid1_dummy + covid2_dummy + covid3_dummy
+```{r Q1 Model 1}
+q1_m1 <- feols(Unemployed ~ YEAR + MONTH + covid1_dummy + covid2_dummy + covid3_dummy,
+               data = q1_df,
+               weights = q1_df$WTFINL,
+               vcov = 'hetero')
+etable(q1_m1)
+resid_m1 <- resid(q1_m1)
+wald(q1_m1, keep = c('covid', 'YEAR', 'MONTH'))
+plot(fitted(q1_m1), resid_m1)
+```
 
-whyunemp_chart <- whyunemp_filtered %>%
-  ggplot(mapping = aes(x = monthyear, y = Count, color = as.factor(WHYUNEMP))) +
-  geom_line() +
-  labs(x = 'Reason Why Unemployed',
-       y = 'Aggregated Count',
-       title = 'Unemployment Reason Changes Over Time',
-       subtitle = 'Excludes NIU (no response)') +
-  theme(legend.position = 'bottom',
-        axis.text.x = element_text(angle = -45),
+Question 1, Model 1 Analysis:
+Although we observe statistically significant results for our variables (albeit at varying levels of significance), this model does not help us fully identify how COVID has impacted the retail industry. Our residual plotting chart shows that a LOGIT model may work better as we are using Unemployed (our binary dependent variable) as the ultimate variable of interest. Based on this analysis, we wanted to introduce an interaction term for question one in order to identify the impact of COVID after April 1, 2020, the date that we assume COVID would have the biggest impact on Unemployment which is shown in our next model.
+
+
+
+### Question 1, Model 2:
+```{r Q1 Model 2}
+q1_m2 <- feols(Unemployed ~ YEAR*Covid_April + YEAR + MONTH + REGION + covid1_dummy + covid2_dummy + covid3_dummy,
+               data = q1_df,
+               weights = q1_df$WTFINL,
+               vcov = 'hetero')
+etable(q1_m2)
+```
+Question 1, Model 2 Analysis:
+Introducing an interaction term in this regression gave us surprising results - we see the interaction term coefficient of -0.224 is statistically significant, but leads us to believe that after April 1, 2020, COVID led to a decrease in unemployment, however, this result is not fully satisfying because we saw in our exploratory data analysis that unemployment spiked during this time frame. To further investigate, we ran a third model using LOGIT.
+
+
+
+### Question 1, Model 3:
+```{r Q1 Model 3}
+q1_m3 <- feglm(Unemployed ~ YEAR*Covid_April + YEAR + MONTH +
+                 REGION + covid1_dummy + covid2_dummy + covid3_dummy,
+               data = q1_df,
+               weights = q1_df$WTFINL,
+               family = binomial(link = 'logit'))
+etable(q1_m3)
+log_q1_m3 <- marginaleffects(q1_m3)
+log_m3 <- summary(log_q1_m3)
+
+kable(x = log_m3, 
+      format = "html", 
+      caption = "Marginal Effects Question 1 Model 3")
+
+# Using Predictions to gather probabilities of our scenarios:
+summ_during_covid <- summary(predictions(q1_m3, newdata = datagrid(Covid_April = 1)))
+kable(x = summ_during_covid, 
+      format = "html", 
+      caption = "During Covid Retail Unemployment")
+
+summ_before_covid <- summary(predictions(q1_m3, newdata = datagrid(Covid_April = 0)))
+kable(x = summ_before_covid, 
+      format = "html", 
+      caption = "Before Covid Retail Unemployment")
+```
+
+
+**Based on this regression and analysis, we see that pre-COVID (before April 1st, 2020), we would anticipate an unemployment rate of 3.69%, and post-COVID, we anticipate an unemployment rate of 11.54% which is a massive spike. This aligns much more closely to what we saw in our exploratory data analysis charts.**
+
+
+Lastly, our team ran a plot to see how well our LOGIT model predicts unemployment:
+Q1_m3 Logit Model Plot:
+```{r Q1 Logit Plot}
+# mutate original q1 dataframe to include prediciton and index
+q1_df <- q1_df %>% 
+  mutate(logit_predict = predict(q1_m3,
+                                 type = 'response',
+                                 newdata = q1_df)) %>% 
+  mutate(logit_index = predict(q1_m3,
+                               type = 'link',
+                               newdata = q1_df))
+
+q1_logit_plot <- q1_df %>%
+  ggplot() +
+  geom_line(aes(x = logit_index, 
+                y = logit_predict)) + 
+  geom_smooth(aes(x = logit_index, 
+                  y = Unemployed)) +
+  labs(x = 'Logit Index',
+       y = 'Logit Prediction',
+       title = 'LOGIT Overlap Accuracy of Model Predictions',
+       subtitle = 'Question 1, Model 3') +
+  theme(axis.text.x = element_text(angle = -45),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         panel.background = element_blank(),
         axis.line = element_line(color = ))
 
-whyunemp_chart
+q1_logit_plot
+```
+
+We observe that the LOGIT model performs quite well.
+
+### Assumptions and reasoning Question 1:
+To answer this question, our team relied on examining observations that were solely within the retail industry (filtering out any non-retail industry observations). Because we are examining retail compared to other industries in question 2, we felt that filtering to only retail observations for our first question was appropriate.
+
+We also assumed that April 1st, 2020 was the 'cutoff' point marking the beginning of COVID. We chose this cutoff point as the month of March could go either way as counting 'pre' or 'post' COVID, so we chose a more conservative approach and marked the beginning of COVID as April 1.
+
+Another assumption we made was that a LOGIT model was most appropriate to answer this first question. Although we did explore multiple linear regressions, we ultimately felt that a LOGIT model was best to answer the question. In using this model, we recognize there is inherent risk to the accuracy of the model, particularly on the tail ends of the model, and we also recognize the incidental parameter issue with the impact of multiple fixed effect controls leadings to a less marginally effective model.
+
+With our first question answered, we now move on to question two.
+
+
+
+### Methodology and Interpretation Question 2:
+
+The official question is "How has retail fared relative to other industries?", which I interpretted in the direction of employment status. The data set I focused on had items that we felt would be worth controlling for, like region and the year and month, along with the individual waves of covid, which would certainly be an endogenous variable that would impact if people were able to get any variety of employment. I also wanted to control for Age, Sex and Race in my final model. Additionally, since this is survey data, utilizing the weights is crucial to make sure that we don't introduce any extra back doors. 
+```{r Q2 Data Frame}
+#Dummies and Controls
+ques2 <- clean_df %>% dplyr::select(YEAR, MONTH, monthyear, CPSID, WTFINL, AGE, SEX, RACE, CLASSWKR, WHYUNEMP, WKSTAT, INDNAME, covid1_dummy, covid2_dummy, covid3_dummy, REGION) 
+
+ques2$unemper <- ifelse(ques2$WKSTAT %in% c("Unemployed, seeking part-time work", "Unemployed, seeking full-time work"), 1, 0)
+
+avg_unemper <- mean(ques2$unemper) #looking for what the probability of being generally unemployed is
+
+ques2$retail_or_not <- ifelse(ques2$INDNAME %in% c("Retail Trade"), 1, 0)
+
+ques2$covid_april <- ifelse(ques2$monthyear >= '2020-04-01', 1, 0) # the 1 is layoffs in #april
+```
+
+
+#### First model verifying controls:
+unemper is our dependent model, which I took both seeking full time and seeking part time responses. It is possible that I could have included responses for people that had gone from full time down to part time, but I felt that full unemployment measures would better describe the health of retail compared to other industries.
+```{r Q2 Model 1}
+ques2m1 <- feols(unemper ~ retail_or_not + YEAR + MONTH | REGION + covid1_dummy + covid2_dummy + covid3_dummy, 
+                 data = ques2, weights = ques2$WTFINL, vcov='hetero')
+
+
+etable(ques2m1)
+
+
+
+resid_1 <- resid(ques2m1)
+plot(fitted(ques2m1), resid_1)
+```
+
+
+Observing the impact of retail_or_not, a dummy variable, it is apparent that there is a minor yet significant impact from being in retail compared to other industries, and how that relates to becoming unemployed. The residuals plot shows us that this multivariate model doesn't fit well with a dependent variable that is binary. Due to the heteroskedasticity we see it makes sense to try a logit model next to see how that performs. With our current Fixed Effects, it also becomes important to verify that they are all useful, so we proceed to do some WALD tests.
+
+
+```{r Q2 M1 Wald}
+wald(ques2m1, c("YEAR", "MONTH")) #both are useful
+wald(ques2m1, c("REGION")) # All regions are significant
+wald(ques2m1, c("covid1_dummy", "covid2_dummy", "covid3_dummy")) # all are significant and useful
+```
+The Wald Tests show that Year and Month are both jointly significant, which makes a lot of sense since the impact of Covid has been very time reliant. From there we also see that Region is also a significant control, which seems logical, as Covid impacted different regions in very specific ways. Lastly, our very useful dummy variables also work well as controls which I am sure helps present a different set of time control compared to Month and Year, making these dummies particularly useful. 
+
+
+
+
+#### Second Model Logit:
+For the second model, a Logit with Binary Dependent Variable, the controls are relatively the same as the first model. I was able to still include the weights argument, and get an output on Marginal Fixed Effects. This model enables us to interpret the impact of retail employment on being unemployed through probability.
+```{r Q2 Model 2}
+ques2logit <- feglm(unemper ~ retail_or_not + YEAR + MONTH | REGION + covid1_dummy + covid2_dummy + covid3_dummy, 
+                 data = ques2, weights = ques2$WTFINL, family = binomial(link = 'logit')) # 
+
+log_m <- marginaleffects(ques2logit)
+log_1 <- summary(log_m)
+
+kable(x=log_1, format = "html", caption = "Low Marginal Effect of Retail or Not")
+```
+
+From the Marginal Effect we see that the impact is fairly low, and has little to no significance. Upon observing this, reflecting on our real question brings in a time parameter. We are controlling for time currently, but it is relevant to think of utilizing fixed effects across a lot of our demographic variables, which leave a lot of open back doors. Additionally, observing our changes over time would be best to do with a dummy variable. I want to see what the impact of covid was on retail employment compared to other industries, so isolating that time in our model is crucial. 
+
+
+#### Final Model Logit with Interaction Term:
+For the final Model I added in the extra set of controls (Age, Sex, Race) as fixed effects. These are all spanning categories for our variable of interest (unemployment for retail), so controlling for them should help to close back doors. Since I am not concerned about their coefficient power or impact on the model, no WALD test will be used to verify the power of impact. 
+Additionally, I create another dummy variable for April, to see what the interaction is between being before and after April is on Retail employment compared to other industries. Of course the weights from the data are also still present in this final model. 
+```{r Q2 Final Model}
+# Creating a dummy variable to see before and during covid. I will keep the assumption that March was the first wave of covid, but 
+#the layoffs would have initiated after covid had lingered, so I am marking in April:
+
+ques2logit2 <- feglm(unemper ~ retail_or_not*covid_april + YEAR + MONTH + covid1_dummy + # implementing "|" makes prediction NA 
+                     covid2_dummy + covid3_dummy + AGE + SEX + RACE + REGION, 
+                   data = ques2, weights = ques2$WTFINL, family = binomial(link = 'logit')) # 
 
 ```
 
-Upon closer observation, it also appears that retail_trade jobs (1) did suffer a dip, but proportionally it was not as severe as the other industries.
-```{r}
 
-#Now looking at how Full employment has faired in and out of retail.
-
-clean_df$employed_full <- ifelse(clean_df$WKSTAT %in% c("Full-time hours (35+), usually full-time", "Full-time hours (35+), usually part-time for economic reasons", "Full-time hours (35+), usually part-time for non-economic reasons"), 1, 0)
-
-clean_df$retail_or_not <- ifelse(clean_df$INDNAME %in% c("Retail Trade"), 1, 0)
-
-tot = clean_df %>%  summarize(n = sum(employed_full)) %>% pull(n)
-
-
-
-
-time_full <- clean_df %>% group_by(retail_or_not, monthyear) %>% summarize(n1 = sum(employed_full)/tot)  # divide by in order to get proportions
-
-time_full %>% 
-  ggplot(mapping = aes(x = monthyear, y = n1, color = as.factor(retail_or_not))) + 
-  geom_line()
-
-```
-
-```{r}
-
-
-
-
+Using Predictions formatting to gather probabilities of our scenarios:
+```{r Q2 Predictions}
+#pred <- predictions(ques2logit2, variables = list(retail_or_not=c(0,1), covid_april=c(1,0)))
+sum1 <- summary(predictions(ques2logit2, newdata = datagrid(retail_or_not= 1, covid_april = 1)))
+kable(x=sum1, format = "html", caption = "During Covid Retail Unemployment")
+sum2 <- summary(predictions(ques2logit2, newdata = datagrid(retail_or_not= 1, covid_april = 0)))
+kable(x=sum2, format = "html", caption = "Before Covid Retail Unemployment")
 ```
 
 
 
-2 How the analyses answer the question being asked, and what the result is 
+
+Interpretation: 
+These are overall probabilities. For the first scenario, if everyone was a retail worker after April 1st, we would anticipate an unemployment rate of 4.85%
+Second Scenario indicates that for retail workers before the pandemic the risk of unemployment was 2.3%, meaning if we only had 1000 retail workers pre pandemic, we would expect 23 of them to be unemployed.
+
+So there is certainly an increased risk of unemployment overtime for retail workers. 
+
+
+
+
+
+
+```{r Q2 Kable Summaries}
+sum3 <- summary(predictions(ques2logit2, newdata = datagrid(retail_or_not= 0, covid_april = 0)))
+kable(x=sum3, format = "html", caption = "Before Covid Non-Retail Unemployment")
+sum4 <- summary(predictions(ques2logit2, newdata = datagrid(retail_or_not= 0, covid_april = 1)))
+kable(x=sum4, format = "html", caption = "During Covid Non-Retail Unemployment")
+```
+
+
+
+
+Interpretation:
+These are also general probabilities.
+First Scenario, if no one was a retail employee, before April of 2020 we would anticipate having an unemployment rate of 1.42%.
+Second summary shows that non retail workers post April 1st would anticipate an unemployment rate of 3.09%, which is lower than for retail workers, however we do see an increased growth of risk for unemployment in both retail and non retail. 
+
+```{r Q2 Avg Unempr}
+avg_unemper
+```
+We see that retail in general has a post covid higher than average rate of unemployment from 3.22% to 4.85%
+
+In our interaction term we see that if the time is in April 2020 or later that there is an increased risk of unemployment across all industries, with retail having the highest risk. 
+
+
+Here is a visual which portrays the accuracy of the final logit model. 
+```{r Q2 Logit Plot}
+ques2 <- ques2 %>% mutate(logit_predict2 = predict(ques2logit2, type="response", newdata=ques2))
+ques2 <- ques2 %>% mutate(logit_index2 = predict(ques2logit2, type="link", newdata=ques2))
+
+
+
+ques2 %>% ggplot() +
+  geom_line(aes(x=logit_index2, y=logit_predict2)) + geom_smooth(aes(x=logit_index2, y=unemper)) +
+  labs(x = "Logit Index", y = "Logit Prediction", title = "Overlap Accuracy of Model Predictions")
+```
+
+
+The curve and predicted values are relatively overlapping and correct over the index, which shows that our model is relatively healthy. 
+
+### Assumptions and reasoning Question 2:
+- A key assumption from my last model is that I used April is the cut off time for before and after Covid in my interaction term. I feel that this is justified through the exploratory analysis we did which portrays how the strongest effects of Covid on income and employment began after March, in April. Additionally, I feel this is justified because logically speaking, closures, stay at home orders and nation wide lock-downs didn't start until the very tail end of March. 
+
+- Logit models also tend to be less accurate to either end of the tale of the model, which is worth recognizing as the index of our model is being observed across a large span of time. It may be to our benefit that the timing of our covid variable is not on the ends of our model. Additionally, Logit Models have the incidental parameter issue, where they tend to be marginally less effective with lots of different fixed effect controls. Our model does have a lot of fixed effect controls, but we have deemed them all necessary as there is no redundancy. 
+
+-Assumptions about employment types being that I have only chosen to observe loss of job completely, compared to observation of loss of hours. Our data does include information on people going from full time work to part time work, however I felt that was unlikely to be as impactful or important to industry health as people that lost their jobs outright. 
+
+-Assumptions about other industries are that there are no serious outliers that would cripple the comparison between non retail and retail jobs. Our EDA did verify that the average spread of job loss was unique between industries, but also didn't have any that were completely untouched or outliers of lost jobs. 
+
+### Methodology and Interpretation Question 3:
+
+The objective for question three is to determine what groups of people are employed post-covid and who is making money. Then analyzing if those groups have changed from before the pandemic began. 
+
+First we look at basic demographics such as age, gender, student status, and race to determine how much each category contributes to employment status between each of the covid waves. 
+
+```{r Q3 Data Frame}
+
+q3_df <- clean_df %>% 
+  mutate(sex_binary = ifelse(SEX =="Female", 1, 0)) %>% 
+  mutate(married = ifelse(MARST == "Married, spouse present", 1, 0)) %>% 
+  mutate(Employed = ifelse(WKSTAT %in% c("Full-time hours (35+), usually full-time", 
+                                         "Full-time hours (35+), usually part-time for economic reasons",
+                                         "Full-time hours (35+), usually part-time for non-economic reasons"),
+                           1, 0)) %>% 
+  mutate(all_covid = ifelse(monthyear >= '2020-03-01', 1, 0)) %>% 
+  dplyr::select(c(WKSTAT, Employed, IncNumber,YEAR, MONTH, race_dummy, student_dummy, AGE, sex_binary, 
+                  married, NCHILD,covid1_dummy, covid2_dummy, covid3_dummy, REGION, all_covid))
+
+```
+
+
+```{r Q3 Model 1}
+
+q3m1 <- feols(Employed ~ race_dummy + student_dummy + AGE + sex_binary + covid1_dummy + covid2_dummy + covid3_dummy,
+              data=q3_df)
+etable(q3m1)
+
+
+```
+As we can see, being white, male, non-student, and younger tends to improve the chances of being employed. We can also see that each wave of covid decreased employment rates. 
+
+```{r Q3 M1 Wald}
+
+wald(q3m1, 'race_dummy')
+wald(q3m1, 'student_dummy')
+wald(q3m1, 'AGE')
+wald(q3m1, 'sex_binary')
+wald(q3m1, 'covid1_dummy')
+wald(q3m1, 'covid2_dummy')
+wald(q3m1, 'covid3_dummy')
+
+
+```
+Each control in the model has a significant impact.
+
+```{r Q3 Model 2}
+
+q3m2 <- feols(IncNumber ~ race_dummy + student_dummy + AGE + sex_binary + covid1_dummy + covid2_dummy + covid3_dummy,
+              data=q3_df)
+etable(q3m2)
+
+
+```
+When using the same controls but looking at income instead of employment we can see similar trends, white, male, and younger people tend to improve income. However being a student and age have very small impacts at this level. Something to note is that the covid wave variables included in the model have a positive coefficient, that is believe to be because as people were laid off, those earning more money remained employed and are becoming a larger portion of the data set as those not in the labor force tended to not report an income which is then dropped from the model. 
+
+
+```{r Q3 M2 Wald}
+
+
+wald(q3m2, 'race_dummy')
+wald(q3m2, 'student_dummy')
+wald(q3m2, 'AGE')
+wald(q3m2, 'sex_binary')
+wald(q3m2, 'covid1_dummy')
+wald(q3m2, 'covid2_dummy')
+wald(q3m2, 'covid3_dummy')
+
+```
+
 
 3 Carefully interpreting the results
 
-4 Presenting the results in an appealing way. Graphs are great, sumtable() is great, export_summs() is great - put a little effort into formatting tables and figures to make them look nice! At the very least, variable names should be in English rather than statistics-package (‘Education’ not ‘EDUC’). If you aren’t comfortable enough with ggplot to make its visualizations look nice, feel free to make graphics in Excel or Tableau or anything you like, and include them in your RMarkdown doc as images. Econometric analyses should be in R.
+
+
+### Assumptions and reasoning Question 3:
+
+We assume that income increases during the covid waves because as people are lost from the labor force they stopped reporting their income for the most part. That would lead to missing values in the dataset which are then dropped from the model which would skew the data into higher income as we see if lower earners were more likely to have lost their jobs. 
+
 
 5 Acknowledging the assumptions you are making in each analysis, how plausible those assumptions are in the context of your data, and any evidence you can provide backing up those assumptions
 
 6 After doing all analyses related to a given question, provide a generalized answer to the main questions.
 
-I do not expect undisputable flawless results - the data can only do so much, and we always have to rely on assumptions. However, an analysis with big flaws goes down a lot easier if you can very accurately interpret the results, point out the flaws or implausible assumptions, discuss how those flaws affect the results, and perhaps suggest an improved analysis you would run if it were feasible. Don’t claim more than your results can actually show.
+I do not expect indisputable flawless results - the data can only do so much, and we always have to rely on assumptions. However, an analysis with big flaws goes down a lot easier if you can very accurately interpret the results, point out the flaws or implausible assumptions, discuss how those flaws affect the results, and perhaps suggest an improved analysis you would run if it were feasible. Don’t claim more than your results can actually show.
+
+
+## Results and Further Research:
+For Question 1: How has COVID affected the health of the retail industry, as measured by employment?
+
+Question one is interesting because it solely focuses on the retail industry. As we found, there is a significant impact COVID had on the retail industry wherein pre-COVID (before April 1st, 2020), we anticipate an unemployment rate of 3.7%, and post-COVID, we anticipate an unemployment rate of 11.29% holding all else equal.
+
+For further research, it would be interesting to see how COVID has affected other specific industries, such as restaurants or 'service' dependent industries. Ultimately, those findings could help inform policy decision makers. In addition to looking at other industries, it would be interesting to rerun our results with more data stretching back further in time. It would also be interesting to see if other diseases yield similar results - or what the difference is between the impact of COVID vs a different virus on the retail industry.
+
+
+For Question 2....
+In regards to Question 2, "How has retail fared relative to other industries?"  We see that there is a significant probability difference in being unemployed during the pandemic if you are in retail. During covid in retail compared to non retail workers the likely hood of being unemployed was 4.85% compared to 3.09%. This means that being in retail increased your chances of becoming unemployed, and as a whole, the industry suffered more than other industries on average when it came to unemployment. However there is a relationship between transitioning into covid and all industries suffering more job loss on average.
+
+To further research this question, it would be very helpful to gather more data on the different types of retail workers, at an even larger scale, and see who from stores, malls, food centers and other retail services suffered the most at large scale. Our sample here doesn't quite capture the millions of retail-like workers that must have gone without a paycheck at some point in time. It would also be very interesting to see if and how these individuals re-entered the work place following the de-escalation of covid. 
+
+
+
+For Question 3...
+Retail needs to worry about who has money to spend - what has changed about who is working and earning money?
+
+The trends we saw before the first covid spikes at the end of the first quarter 2020 in regards to the workforce and income distribution still exist now that things are returning to normal in regards to the pandemic. The people who are employed and have money tend to be younger, white, and female. There were changes in every group as each wave of covid began and the recovery for everyone has been different but overall not much has changed in who has money. 
+
+Something to consider for further research is the rate of recovery for different demographics to pre-pandemic levels. Also tracking individuals to see if people leaving an industry returned to that industry or took this as an opportunity to change careers. 
+
+
+
+

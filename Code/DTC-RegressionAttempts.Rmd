@@ -1,6 +1,6 @@
 ---
 title: "Regression Attempts"
-author: "Jordan Gropper"
+author: "Brooke Cummins, Andy Turner, Sean Bellevue and Jordan Gropper"
 date: '2022-08-09'
 output: html_document
 ---
@@ -32,12 +32,9 @@ clean_df<- read_csv('../RawData/final_clean.csv')
 
 
 
-
-
 ## 1 How has COVID affected the health of the retail industry, as measured by employment?
 -Andy:
 Dependent variable: WKSTAT
-Explanatory variables: YEAR, MONTH, WTFINL, CLASSWKR, WHYUNEMP, WKSTAT
 ```{r}
 # select cols
 # mutate to get binary if full time work status
@@ -46,59 +43,96 @@ Explanatory variables: YEAR, MONTH, WTFINL, CLASSWKR, WHYUNEMP, WKSTAT
 q1_df <- clean_df %>%
   dplyr::select(YEAR, MONTH, monthyear, CPSID, PERNUM, WTFINL, CLASSWKR, WHYUNEMP, WKSTAT,
                 REGION, INDNAME, covid1_dummy, covid2_dummy, covid3_dummy) %>%
-  mutate(Employed = ifelse(WKSTAT %in% c("Full-time hours (35+), usually full-time", 
-                                         "Full-time hours (35+), usually part-time for economic reasons",
-                                         "Full-time hours (35+), usually part-time for non-economic reasons"),
+  mutate(Unemployed = ifelse(WKSTAT %in% c("Unemployed, seeking part-time work", "Unemployed, seeking full-time work"),
                            1, 0)) %>%
   mutate(JobLost = ifelse(WHYUNEMP %in% c("Job loser - on layoff", "Other job loser"), 1, 0)) %>%
-  mutate(RetailInd = ifelse(INDNAME %in% c("Retail Trade"), 1, 0)) %>%
-  mutate(Cutoff = ifelse(monthyear >= '2020-03-01', 1, 0)) %>%
-  filter(RetailInd == 1) # filter to only the retail industry
+  mutate(RetailIndustry = ifelse(INDNAME %in% c("Retail Trade"), 1, 0)) %>%
+  mutate(Covid_April = ifelse(monthyear >= '2020-04-01', 1, 0)) %>%
+  filter(RetailIndustry == 1) # filter to only the retail industry
 ```
 
-Question 1, Regression 1:
+### Question 1, Model 1:
 Employed ~ YEAR + MONTH + REGION + covid1_dummy + covid2_dummy + covid3_dummy
 ```{r}
-q1_m1 <- feols(Employed ~ YEAR + MONTH + covid1_dummy + covid2_dummy + covid3_dummy,
+q1_m1 <- feols(Unemployed ~ YEAR + MONTH + covid1_dummy + covid2_dummy + covid3_dummy,
                data = q1_df,
                weights = q1_df$WTFINL,
                vcov = 'hetero')
 etable(q1_m1)
 resid_m1 <- resid(q1_m1)
-wald(q1_m1, keep = 'covid')
+wald(q1_m1, keep = c('covid', 'YEAR', 'MONTH'))
 plot(fitted(q1_m1), resid_m1)
 ```
+Question 1, Model 1 Analysis:
+Although we observe statistically significant results for our variables (albeit at varying levels of significance), this model does not help us fully identify how COVID has impacted the retail industry. Our residual plotting chart shows that a LOGIT model may work better as we are using Unemployed (our binary dependent variable) as the ultimate variable of interest. Based on this analysis, we wanted to introduce an interaction term for question one in order to identify the impact of COVID after April 1, 2020, the date that we assume COVID would have the biggest impact on Unemployment which is shown in our next model.
 
-Question 1, Regression 2:
+### Question 1, Model 2:
 ```{r}
-q1_m2 <- feglm(Employed ~ YEAR + MONTH | REGION + covid1_dummy + covid2_dummy + covid3_dummy,
+q1_m2 <- feols(Unemployed ~ YEAR*Covid_April + YEAR + MONTH + REGION + covid1_dummy + covid2_dummy + covid3_dummy,
                data = q1_df,
-               family = binomial(link = 'logit'),
+               weights = q1_df$WTFINL,
                vcov = 'hetero')
 etable(q1_m2)
 ```
+Question 1, Model 2 Analysis:
+Introducing an interaction term in this regression gave us surprising results - we see the interaction term coefficient of -0.224 is statistically significant, but leads us to believe that after April 1, 2020, COVID led to a decrease in unemployment, however, this result is not fully satisfying because we saw in our exploratory data analysis that unemployment spiked during this time frame. To further investigate, we ran a third model using LOGIT.
 
+
+### Question 1, Model 3:
 ```{r}
-q1_m3 <- feglm(Employed ~ YEAR*Cutoff + YEAR + MONTH |
+q1_m3 <- feglm(Unemployed ~ YEAR*Covid_April + YEAR + MONTH |
                  REGION + covid1_dummy + covid2_dummy + covid3_dummy,
                data = q1_df,
                family = binomial(link = 'logit'))
 etable(q1_m3)
+log_q1_m3 <- marginaleffects(q1_m3)
+log_m3 <- summary(log_q1_m3)
+
+kable(x = log_m3, 
+      format = "html", 
+      caption = "Low Marginal Effect of Retail or Not")
+
+# Using Predictions to gather probabilities of our scenarios:
+summ_during_covid <- summary(predictions(q1_m3, newdata = datagrid(Covid_April = 1)))
+kable(x = summ_during_covid, 
+      format = "html", 
+      caption = "During Covid Retail Unemployment")
+
+summ_before_covid <- summary(predictions(q1_m3, newdata = datagrid(Covid_April = 0)))
+kable(x = summ_before_covid, 
+      format = "html", 
+      caption = "Before Covid Retail Unemployment")
 ```
 
+Q1 Model 3 Logit Plot
 ```{r}
-q1_m4 <- feols(Employed ~ YEAR*Cutoff + YEAR + MONTH + REGION + covid1_dummy + covid2_dummy + covid3_dummy,
-               data = q1_df,
-               weights = q1_df$WTFINL,
-               vcov = 'hetero')
-etable(q1_m4)
-```
+# mutate original q1 dataframe to include prediciton and index
+q1_df <- q1_df %>% 
+  mutate(logit_predict = predict(q1_m3,
+                                 type = 'response',
+                                 newdata = q1_df)) %>% 
+  mutate(logit_index = predict(q1_m3,
+                               type = 'link',
+                               newdata = q1_df))
 
-Q1 all results:
-```{r}
-etable(q1_m1, q1_m2, q1_m3, q1_m4)
-```
+q1_logit_plot <- q1_df %>%
+  ggplot() +
+  geom_line(aes(x = logit_index, 
+                y = logit_predict)) + 
+  geom_smooth(aes(x = logit_index, 
+                  y = Unemployed)) +
+  labs(x = 'Logit Index',
+       y = 'Logit Prediction',
+       title = 'LOGIT Overlap Accuracy of Model Predictions',
+       subtitle = 'Question 1, Model 3') +
+  theme(axis.text.x = element_text(angle = -45),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(color = ))
 
+q1_logit_plot
+```
 
 
 
@@ -263,7 +297,7 @@ ques2 %>% ggplot() +
 
 Data for this Question:
 ```{r}
-q3_df <- final_df %>% 
+q3_df <- clean_df %>% 
   mutate(sex_binary = ifelse(SEX =="Female", 1, 0)) %>% 
   mutate(married = ifelse(MARST == "Married, spouse present", 1, 0)) %>% 
   mutate(Employed = ifelse(WKSTAT %in% c("Full-time hours (35+), usually full-time", 
@@ -472,7 +506,7 @@ wald(ques3m4,"YEAR")
 
 ```
 
-The marriage variable being compared to is Divorced which makes sence. 
+The marriage variable being compared to is Divorced which makes sense. 
 
 ```{r}
 
@@ -521,10 +555,4 @@ etable(ques3m3)
 
 
 
-<<<<<<< HEAD
 
-
-
-
-=======
->>>>>>> 6be20b6927b4d977a43c27a3c6ef6a7c0a248534
