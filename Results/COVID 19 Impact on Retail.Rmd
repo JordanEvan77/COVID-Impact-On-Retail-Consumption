@@ -74,14 +74,7 @@ In trying to establish how income has changed since covid began impacting the ec
 When it comes to the age breakdown of who is employed it seems that even through the dip in average employment rate for all groups the same trends appear in that traditional working ages between 20-60 are mostly employed. 
 These charts all demonstrate our inital exploration of our data set. From here, we began our analysis to answer the three research questions.
 
-------------------------------------------------------------------------------------------------------------
-# REMOVE THIS SECTION BEFORE SUBMITTING - this is from the Prof
-2. How the analyses answer the question being asked, and what the result is: 
-3. Carefully interpreting the results: 
-4. Presenting the results in an appealing way. Graphs are great, sumtable() is great, export_summs() is great - put a little effort into formatting tables and figures to make them look nice! At the very least, variable names should be in English rather than statistics-package (‘Education’ not ‘EDUC’). If you aren’t comfortable enough with ggplot to make its visualizations look nice, feel free to make graphics in Excel or Tableau or anything you like, and include them in your RMarkdown doc as images. Econometric analyses should be in R.
 
-
--------------------------------------------------------------------------------------------------------------
 ## Models and Analysis:
 
 ### Methodology and Interpretation Question 1:
@@ -425,7 +418,6 @@ wald(q3m2, 'covid3_dummy')
 ```
 
 
-3 Carefully interpreting the results
 
 
 
@@ -433,12 +425,6 @@ wald(q3m2, 'covid3_dummy')
 
 We assume that income increases during the covid waves because as people are lost from the labor force they stopped reporting their income for the most part. That would lead to missing values in the dataset which are then dropped from the model which would skew the data into higher income as we see if lower earners were more likely to have lost their jobs. 
 
-
-5 Acknowledging the assumptions you are making in each analysis, how plausible those assumptions are in the context of your data, and any evidence you can provide backing up those assumptions
-
-6 After doing all analyses related to a given question, provide a generalized answer to the main questions.
-
-I do not expect indisputable flawless results - the data can only do so much, and we always have to rely on assumptions. However, an analysis with big flaws goes down a lot easier if you can very accurately interpret the results, point out the flaws or implausible assumptions, discuss how those flaws affect the results, and perhaps suggest an improved analysis you would run if it were feasible. Don’t claim more than your results can actually show.
 
 
 ## Results and Further Research:
