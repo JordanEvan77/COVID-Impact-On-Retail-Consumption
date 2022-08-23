@@ -26,16 +26,16 @@ options(htmltools.dir.version = FALSE)
 knitr::opts_chunk$set(echo = FALSE, dev.args = list(png = list(type = "cairo")), warning = FALSE, message = FALSE, fig.width = 8, fig.height = 6)
 theme_metro <- function(x) {
   theme_classic() + 
-  theme(panel.background = element_rect(color = '#FAFAFA',fill='#FAFAFA'),
-        plot.background = element_rect(color = '#FAFAFA',fill='#FAFAFA'),
+  theme(panel.background = element_rect(color = '#FFFFFF',fill='#FFFFFF'),
+        plot.background = element_rect(color = '#FFFFFF',fill='#FFFFFF'),
         text = element_text(size = 16),
         axis.title.x = element_text(hjust = 1),
         axis.title.y = element_text(hjust = 1, angle = 0))
 }
 theme_metro_regtitle <- function(x) {
   theme_classic() + 
-  theme(panel.background = element_rect(color = '#FAFAFA',fill='#FAFAFA'),
-        plot.background = element_rect(color = '#FAFAFA',fill='#FAFAFA'),
+  theme(panel.background = element_rect(color = '#FFFFFF',fill='#FFFFFF'),
+        plot.background = element_rect(color = '#FFFFFF',fill='#FFFFFF'),
         text = element_text(size = 16))
 }
 library(fixest)
@@ -310,7 +310,7 @@ q2_m3 <- feglm(unemper ~ retail_or_not*covid_april + YEAR + MONTH + covid1_dummy
 # Interpretation of Selected Model
 - Model #3: Interpreting Logit Interaction Terms
 - Utilized Inter Effect Code:  
-    - summary(predictions(ques2logit2, newdata = datagrid(retail_or_not= 1, covid_april = 1)))
+    - summary(predictions(ques2logit2, newdata=datagrid(retail_or_not=1, covid_april=1)))
     - First Scenario indicates that for retail workers before April 1st the risk of unemployment was 2.3%, meaning if we only had 1000 retail workers pre pandemic, we would expect 23 of them to be unemployed.
     - Second Scenario if everyone was a retail worker after April 1st, we would anticipate an unemployment rate of 4.85%
     - Third scenario, if no one was a retail employee, before April 1st we would anticipate having an unemployment rate of 1.42%.
@@ -382,9 +382,9 @@ q3_m4 <- feols(IncNumber ~ all_covid + AGE + race_dummy + sex_binary
 # Question 3 Results: Models 1 and 2
 
 
-- Models 1 and 2 did not include interaction terms and show that overall the demographics of the labor force leaned younger, whiter, and male. They also show that Covid played  a negative on employment as expected.  
+- Models 1 and 2 did not include interaction terms and show that overall the demographics of the labor force leaned younger, whiter, and male. They also show that Covid played a negative on employment as expected.  
 
-```{r, echo = TRUE}
+```{r, echo = FALSE}
 etable(q3_m1, q3_m2)
 ```
 
@@ -395,7 +395,7 @@ etable(q3_m1, q3_m2)
 
 - Models 3 and 4 did include interaction terms and show that within the pandemic the demographics changed very slightly away from white and male toward other groups.  
 
-```{r, echo = TRUE}
+```{r, echo = FALSE}
 etable(q3_m3, q3_m4)
 ```
 
@@ -410,4 +410,4 @@ etable(q3_m3, q3_m4)
 
 # Thank You
 - We enjoyed this class and this project
-- Congrats on winning Idiotest and 
+- Congrats on winning Idiotest
